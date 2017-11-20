@@ -1,6 +1,8 @@
 package main
 
-func govecSaxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY int) (int) {
+func govecSaxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY int) (int);
+
+func _govecSaxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY int) (int) {
 
 	var xi, yi, i int
 

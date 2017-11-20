@@ -1821,7 +1821,6 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 
 	p.print(blank)
 	p.expr(d.Name)
-	// p.print("Nlll")
 
 	params := d.Type.Params
 
@@ -1842,7 +1841,9 @@ func (p *printer) decl(decl ast.Decl) {
 	case *ast.GenDecl:
 		p.genDecl(d)
 	case *ast.FuncDecl:
+		p.print("export \"C\" {", newline)
 		p.funcDecl(d)
+		p.print(newline, "} //export \"C\"\n")
 	default:
 		panic("unreachable")
 	}
