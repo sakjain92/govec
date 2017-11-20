@@ -35,6 +35,24 @@ const (
 	unindent = whiteSpace('<')
 )
 
+// Go types to C
+var ctypes map[string]string = map[string]string {
+    "int8"	: "int8_t",
+    "int16"	: "int16_t",
+    "int32"	: "int32_t",
+    "int64"	: "int64_t",
+    "uint"	: "unsigned int",
+    "uint8"	: "uint8_t",
+    "uint16"	: "uint16_t",
+    "uint32"	: "uint32_t",
+    "uint64"	: "uint64_t",
+    "byte"	: "uint8_t",
+    "rune"	: "int32_t",
+    "float32"	: "float",
+    "float64"	: "double",
+    "complex64"	: "double",
+}
+
 // A pmode value represents the current printer mode.
 type pmode int
 
@@ -891,7 +909,14 @@ func (p *printer) print(args ...interface{}) {
 			continue
 
 		case *ast.Ident:
-			data = x.Name
+			name := x.Name
+
+			// Check if conversion needed?
+			if v, ok := ctypes[name]; ok {
+				name = v
+			}
+
+			data = name
 			impliedSemi = true
 			p.lastTok = token.IDENT
 
