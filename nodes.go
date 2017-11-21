@@ -1817,6 +1817,8 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 		} else {
 			p.parameters(result)
 		}
+	} else if n == 0 {
+		p.print("void ")
 	}
 
 	p.print(blank)
@@ -1841,9 +1843,7 @@ func (p *printer) decl(decl ast.Decl) {
 	case *ast.GenDecl:
 		p.genDecl(d)
 	case *ast.FuncDecl:
-		p.print("export \"C\" {", newline)
 		p.funcDecl(d)
-		p.print(newline, "} //export \"C\"\n")
 	default:
 		panic("unreachable")
 	}

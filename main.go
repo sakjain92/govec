@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"path/filepath"
 )
 
 const (
@@ -74,32 +75,34 @@ func collectGoVecFunctions(n ast.Node) bool {
 func main() {
 
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: my_tool <filenama.go>")
+		fmt.Println("Usage: govec <filename.go>")
 		os.Exit(1)
 	}
 
 	fileName := os.Args[1]
 
-	f, err = os.Create(fileName[:(len(os.Args[1])-2)] + "cpp")
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
+		panic("File doesn't exist")
+	}
+
+	dir := filepath.Dir(fileName)
+	file := filepath.Base(fileName)
+
+	newdir := dir + "/govec/"
+	if _, err := os.Stat(newdir); os.IsNotExist(err) {
+	    os.Mkdir(newdir, 0700)
+	}
+
+	newfilename := newdir + file[:(len(file)-2)] + "c"
+
+	f, err = os.Create(newfilename)
 	check(err)
 	defer f.Close()
-
-	_, err = f.WriteString("#include<bits/stdc++.h>\n")
-	check(err)
 
 
 	fset = token.NewFileSet()
 	node, err := parser.ParseFile(fset, fileName, nil, parser.ParseComments)
 	check(err)
-
-	/*
-	fo, err := os.Create("output.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bufferedWriter := bufio.NewWriter(fo)
-	*/
 
 	ast.Inspect(node, collectGoVecFunctions)
 
