@@ -13,15 +13,16 @@ import (
 
 const (
 	govecPreamble = "_govec"
+	uniformPreamble = "uniform_"
+	rangeFunction = "govecRange"
 	govecFuncPreamble = govecPreamble
 	govecstructPreamble = govecPreamble
 )
 
-// typedef struct parserConfig{
 var f *os.File
+var h *os.File
 var fset *token.FileSet
 var err error
-// }
 
 func check(err error) {
     if err != nil {
@@ -30,7 +31,6 @@ func check(err error) {
 }
 
 func parseFuncDecl(node *ast.FuncDecl) {
-	fmt.Println("")
 	err := Fprint(f, fset, node)
 	check(err)
 
@@ -94,10 +94,15 @@ func main() {
 	}
 
 	newfilename := newdir + file[:(len(file)-2)] + "c"
+	headerfilename := newdir + file[:(len(file)-2)] + "h"
 
 	f, err = os.Create(newfilename)
 	check(err)
 	defer f.Close()
+
+	h, err = os.Create(headerfilename)
+	check(err)
+	defer h.Close()
 
 
 	fset = token.NewFileSet()

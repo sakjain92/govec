@@ -114,6 +114,19 @@ func (p *printer) identList(list []*ast.Ident, indent bool) {
 	p.exprList(token.NoPos, xlist, 1, mode, token.NoPos)
 }
 
+func (p *printer) identList_initialize(list []*ast.Ident, indent bool) {
+	// convert into an expression list so we can re-use exprList formatting
+	xlist := make([]ast.Expr, len(list))
+	for i, x := range list {
+		xlist[i] = x
+	}
+	var mode exprListMode
+	if !indent {
+		mode = noIndent
+	}
+	p.exprList_initialize(token.NoPos, xlist, 1, mode, token.NoPos)
+}
+
 // Print a list of expressions. If the list spans multiple
 // source lines, the original line breaks are respected between
 // expressions.
@@ -246,6 +259,158 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 			p.expr(pair.Value)
 		} else {
 			p.expr0(x, depth)
+		}
+
+		prevLine = line
+	}
+
+	if mode&commaTerm != 0 && next.IsValid() && p.pos.Line < next.Line {
+		// print a terminating comma if the next token is on a new line
+		p.print(token.COMMA)
+		if ws == ignore && mode&noIndent == 0 {
+			// unindent if we indented
+			p.print(unindent)
+		}
+		p.print(formfeed) // terminating comma needs a line break to look good
+		return
+	}
+
+	if ws == ignore && mode&noIndent == 0 {
+		// unindent if we indented
+		p.print(unindent)
+	}
+}
+
+
+func (p *printer) exprList_initialize(prev0 token.Pos, list []ast.Expr, depth int, mode exprListMode, next0 token.Pos) {
+	
+	if len(list) == 0 {
+		return
+	}
+
+	prev := p.posFor(prev0)
+	next := p.posFor(next0)
+	line := p.lineFor(list[0].Pos())
+	endLine := p.lineFor(list[len(list)-1].End())
+
+	if prev.IsValid() && prev.Line == line && line == endLine {
+		// all list entries on a single line
+		for i, x := range list {
+			if i > 0 {
+				// use position of expression following the comma as
+				// comma position for correct comment placement
+				p.print(x.Pos(), token.COMMA, blank)
+			}
+			p.expr0(x, depth)
+		}
+		return
+	}
+
+	// list entries span multiple lines;
+	// use source code positions to guide line breaks
+
+	// don't add extra indentation if noIndent is set;
+	// i.e., pretend that the first line is already indented
+	ws := ignore
+	if mode&noIndent == 0 {
+		ws = indent
+	}
+
+	// the first linebreak is always a formfeed since this section must not
+	// depend on any previous formatting
+	prevBreak := -1 // index of last expression that was followed by a linebreak
+	if prev.IsValid() && prev.Line < line && p.linebreak(line, 0, ws, true) {
+		ws = ignore
+		prevBreak = 0
+	}
+
+	// initialize expression/key size: a zero value indicates expr/key doesn't fit on a single line
+	size := 0
+
+	// print all list elements
+	prevLine := prev.Line
+	for i, x := range list {
+		
+		line = p.lineFor(x.Pos())
+
+		// determine if the next linebreak, if any, needs to use formfeed:
+		// in general, use the entire node size to make the decision; for
+		// key:value expressions, use the key size
+		// TODO(gri) for a better result, should probably incorporate both
+		//           the key and the node size into the decision process
+		useFF := true
+
+		// determine element size: all bets are off if we don't have
+		// position information for the previous and next token (likely
+		// generated code - simply ignore the size in this case by setting
+		// it to 0)
+		prevSize := size
+		const infinity = 1e6 // larger than any source line
+		size = p.nodeSize(x, infinity)
+		pair, isPair := x.(*ast.KeyValueExpr)
+		if size <= infinity && prev.IsValid() && next.IsValid() {
+			// x fits on a single line
+			if isPair {
+				size = p.nodeSize(pair.Key, infinity) // size <= infinity
+			}
+		} else {
+			// size too large or we don't have good layout information
+			size = 0
+		}
+
+		// if the previous line and the current line had single-
+		// line-expressions and the key sizes are small or the
+		// the ratio between the key sizes does not exceed a
+		// threshold, align columns and do not use formfeed
+		if prevSize > 0 && size > 0 {
+			const smallSize = 20
+			if prevSize <= smallSize && size <= smallSize {
+				useFF = false
+			} else {
+				const r = 4 // threshold
+				ratio := float64(size) / float64(prevSize)
+				useFF = ratio <= 1.0/r || r <= ratio
+			}
+		}
+
+		needsLinebreak := 0 < prevLine && prevLine < line
+		if i > 0 {
+			// use position of expression following the comma as
+			// comma position for correct comment placement, but
+			// only if the expression is on the same line
+			if !needsLinebreak {
+				p.print(x.Pos())
+			}
+			p.print(token.COMMA)
+			needsBlank := true
+			if needsLinebreak {
+				// lines are broken using newlines so comments remain aligned
+				// unless forceFF is set or there are multiple expressions on
+				// the same line in which case formfeed is used
+				if p.linebreak(line, 0, ws, useFF || prevBreak+1 < i) {
+					ws = ignore
+					prevBreak = i
+					needsBlank = false // we got a line break instead
+				}
+			}
+			if needsBlank {
+				p.print(blank)
+			}
+		}
+
+		if len(list) > 1 && isPair && size > 0 && needsLinebreak {
+			// we have a key:value expression that fits onto one line
+			// and it's not on the same line as the prior expression:
+			// use a column for the key such that consecutive entries
+			// can align if possible
+			// (needsLinebreak is set if we started a new line before)
+			p.expr(pair.Key)
+			//TODO[Siva]: Might need to change something
+			p.print(pair.Colon, token.COLON, vtab)
+			p.expr(pair.Value)
+		} else {
+			p.expr0(x, depth)
+			p.print(" = {0}")
 		}
 
 		prevLine = line
@@ -686,7 +851,13 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		p.print("BadExpr")
 
 	case *ast.Ident:
-		p.print(x)
+		if x.Name == rangeFunction {
+			// Do nothing
+		} else if strings.HasPrefix(x.Name, uniformPreamble) {
+			p.print("uniform ", x.Name[8:])
+		} else {
+			p.print(x)
+		}
 
 	case *ast.BinaryExpr:
 		if depth < 1 {
@@ -807,6 +978,13 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 			p.print(token.RPAREN)
 		} else {
 			wasIndented = p.possibleSelectorExpr(x.Fun, token.HighestPrec, depth)
+		}
+		if x.Fun.(*ast.Ident).Name == rangeFunction {
+			p.print(x.Args[0], " ... ", x.Args[1])
+			if wasIndented {
+				p.print(unindent)
+			}
+			return;
 		}
 		p.print(x.Lparen, token.LPAREN)
 		if x.Ellipsis.IsValid() {
@@ -1252,7 +1430,7 @@ func (p *printer) stmt(stmt ast.Stmt, nextIsRBrace bool) {
 		p.block(s.Body, 1)
 
 	case *ast.RangeStmt:
-		p.print(token.FOR, blank)
+		p.print("foreach (", blank)
 		if s.Key != nil {
 			p.expr(s.Key)
 			if s.Value != nil {
@@ -1263,8 +1441,8 @@ func (p *printer) stmt(stmt ast.Stmt, nextIsRBrace bool) {
 			}
 			p.print(blank, s.TokPos, s.Tok, blank)
 		}
-		p.print(token.RANGE, blank)
 		p.expr(stripParens(s.X))
+		p.print(" )")
 		p.print(blank)
 		p.block(s.Body, 1)
 
@@ -1625,7 +1803,7 @@ func (p *printer) spec(spec ast.Spec, n int, doIndent bool) {
 			p.exprList(token.NoPos, s.Values, 1, 0, token.NoPos)
 		}
 		p.print(blank)
-		p.identList(s.Names, doIndent) // always present
+		p.identList_initialize(s.Names, doIndent) // always present
 		p.setComment(s.Comment)
 
 	case *ast.TypeSpec:
@@ -1807,6 +1985,8 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 		p.print(blank)
 	}
 
+	p.print("export ")
+
 	result := d.Type.Results
 	n := result.NumFields()
 	if n > 0 {
@@ -1818,7 +1998,7 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 			p.parameters(result)
 		}
 	} else if n == 0 {
-		p.print("void ")
+		p.print("void")
 	}
 
 	p.print(blank)
@@ -1834,6 +2014,7 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 
 	// p.signature(d.Type.Params, d.Type.Results)
 	p.adjBlock(p.distanceFrom(d.Pos()), vtab, d.Body)
+	p.print(newline, newline)
 }
 
 func (p *printer) decl(decl ast.Decl) {
