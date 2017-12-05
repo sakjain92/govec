@@ -5,10 +5,19 @@ package main
 import "C"
 */
 
+/*
 // #cgo CFLAGS: -Igovec
 // #cgo LDFLAGS: govec/libsaxpy.a
 // #include <saxpy.h>
 import "C"
+*/
+
+
+// #cgo CFLAGS: -Igovec
+// #cgo LDFLAGS: govec/libsaxpy_ispc.a
+// #include <saxpy.h>
+import "C"
+
 
 import (
 	"fmt"
@@ -24,6 +33,17 @@ func _govecSaxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY 
 		yi += incY
 	}
 }
+
+/*
+func _govecSaxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY int) {
+
+	var i int
+
+	for i = 0; i < N; i++ {
+		Y[i] += alpha * X[i]
+	}
+}
+*/
 
 func saxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY int) {
 	C.govecSaxpy(C.int(N), C.float(alpha), (*C.float)(&X[0]), C.int(incX), (*C.float)(&Y[0]), C.int(incY))
