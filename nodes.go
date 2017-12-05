@@ -1031,7 +1031,7 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 			//p.expr(x.Len)
 		}
 		p.expr(x.Elt)
-		p.print(" *")
+		p.print("[]")
 
 	case *ast.StructType:
 		p.print(token.STRUCT)
