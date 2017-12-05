@@ -11,3 +11,14 @@ void  govecSaxpy(int N, float alpha, float * X, int incX, float * Y, int incY) {
 		yi += incY;
 	};
 }
+
+/*
+void govecSaxpy(int N, float alpha, float * X, int incX, float * Y, int incY) {
+
+	int i;
+
+	for( i = 0; i < N; i++ ){
+		Y[i] += alpha * X[i];
+	};
+}
+*/
