@@ -15,9 +15,6 @@ import (
 )
 
 func _govecSaxpy(N uniform_int, alpha uniform_float32, X []uniform_float32, Y []uniform_float32) {
-
-	var i uniform_int
-
 	for i = range govecRange(0, N) {
 		Y[i] += alpha * X[i]
 	}

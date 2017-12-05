@@ -483,6 +483,11 @@ func (p *printer) parameters(fields *ast.FieldList) {
 				// will do the right thing.
 				p.identList(par.Names, ws == indent)
 			}
+			switch par.Type.(type) {
+			case (*ast.ArrayType):
+				p.print("[]")
+			}
+
 			prevLine = parLineEnd
 		}
 		// if the closing ")" is on a separate line from the last parameter,
@@ -854,9 +859,17 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		if x.Name == rangeFunction {
 			// Do nothing
 		} else if strings.HasPrefix(x.Name, uniformPreamble) {
-			p.print("uniform ", x.Name[8:])
+			if (x.Name == "uniform_float32") {
+				p.print("uniform float")
+			} else {
+				p.print("uniform ", x.Name[8:])
+			}
 		} else {
-			p.print(x)
+			if (x.Name == "float32") {
+				p.print("float")
+			} else {
+				p.print(x)
+			}
 		}
 
 	case *ast.BinaryExpr:
@@ -1031,7 +1044,6 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 			//p.expr(x.Len)
 		}
 		p.expr(x.Elt)
-		p.print("[]")
 
 	case *ast.StructType:
 		p.print(token.STRUCT)

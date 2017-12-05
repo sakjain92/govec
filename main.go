@@ -93,7 +93,7 @@ func main() {
 	    os.Mkdir(newdir, 0700)
 	}
 
-	newfilename := newdir + file[:(len(file)-2)] + "c"
+	newfilename := newdir + file[:(len(file)-2)] + "ispc"
 	headerfilename := newdir + file[:(len(file)-2)] + "h"
 
 	f, err = os.Create(newfilename)
