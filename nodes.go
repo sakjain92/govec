@@ -285,7 +285,7 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 
 
 func (p *printer) exprList_initialize(prev0 token.Pos, list []ast.Expr, depth int, mode exprListMode, next0 token.Pos) {
-	
+
 	if len(list) == 0 {
 		return
 	}
@@ -332,7 +332,7 @@ func (p *printer) exprList_initialize(prev0 token.Pos, list []ast.Expr, depth in
 	// print all list elements
 	prevLine := prev.Line
 	for i, x := range list {
-		
+
 		line = p.lineFor(x.Pos())
 
 		// determine if the next linebreak, if any, needs to use formfeed:
@@ -1953,7 +1953,7 @@ func (p *printer) nodeSize(n ast.Node, maxSize int) (size int) {
 	// in RawFormat
 	cfg := Config{Mode: RawFormat}
 	var buf bytes.Buffer
-	if err := cfg.fprint(&buf, p.fset, n, p.nodeSizes); err != nil {
+	if err := cfg.fprint(&buf, nil, p.fset, n, p.nodeSizes); err != nil {
 		return
 	}
 	if buf.Len() <= maxSize {
@@ -2053,6 +2053,8 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 
 	p.print("export ")
 
+	p.henabled = true
+
 	result := d.Type.Results
 	n := result.NumFields()
 	if n > 0 {
@@ -2083,6 +2085,11 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 
 	c_str += ");"
 	fmt.Println(c_str)
+
+	p.henabled = false
+	if p.hpresent {
+		p.houtput = append(p.houtput, []byte(";\n")...)
+	}
 
 	// p.signature(d.Type.Params, d.Type.Results)
 	p.adjBlock(p.distanceFrom(d.Pos()), vtab, d.Body)

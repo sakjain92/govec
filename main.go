@@ -5,9 +5,10 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"log"
 	"os"
+	"os/exec"
 	"strings"
+	"bytes"
 	"path/filepath"
 )
 
@@ -27,16 +28,33 @@ var err error
 var c_str string
 var write_c_str bool
 
-func check(err error) {
-    if err != nil {
-        log.Fatal(err)
-    }
+func exit(a ...interface{}) {
+	fmt.Println(a...)
+	os.Exit(-1)
+}
+
+func check(err error, a ...interface{}) {
+	if err != nil {
+		exit(err, a)
+	}
 }
 
 func parseFuncDecl(node *ast.FuncDecl) {
-	err := Fprint(f, fset, node)
+	err := Fprint(f, h, fset, node)
 	check(err)
 
+}
+
+func runCommand(s string, command string, a ...string) {
+	var out bytes.Buffer
+
+	// Create the object file and the library
+	cmd := exec.Command(command, a...)
+	cmd.Stderr = &out
+
+	err := cmd.Run()
+
+	check(err, s, ":\n", out.String())
 }
 
 func collectGoVecFunctions(n ast.Node) bool {
@@ -78,8 +96,7 @@ func collectGoVecFunctions(n ast.Node) bool {
 func main() {
 
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: govec <filename.go>")
-		os.Exit(1)
+		exit("Usage: govec <filename.go>")
 	}
 
 	c_str = ""
@@ -87,27 +104,38 @@ func main() {
 
 	fileName := os.Args[1]
 
-	if _, err := os.Stat(fileName); os.IsNotExist(err) {
-		panic("File doesn't exist")
-	}
+	_, err := os.Stat(fileName)
+	check(err, "Usage: govec <filename.go>")
 
 	dir := filepath.Dir(fileName)
 	file := filepath.Base(fileName)
 
-	newdir := dir + "/govec/"
-	if _, err := os.Stat(newdir); os.IsNotExist(err) {
-	    os.Mkdir(newdir, 0700)
+	filesuffix := file[(len(file)-3):]
+	if filesuffix != ".go" {
+		exit("Usage: govec <filename.go>")
 	}
 
-	newfilename := newdir + file[:(len(file)-2)] + "ispc"
-	headerfilename := newdir + file[:(len(file)-2)] + "h"
+	newdir := dir + "/govec_build/"
+	_, err = os.Stat(newdir);
+
+	if os.IsNotExist(err) {
+	    os.Mkdir(newdir, 0700)
+	} else {
+		check(err, "Couldn't make govec directory", newdir)
+	}
+
+	fileprefix := file[:(len(file)-3)]
+	newfilename := newdir + fileprefix + ".ispc"
+	headerfilename := newdir + fileprefix + ".h"
+	objfilename := newdir + fileprefix + ".o"
+	libfilename := newdir + "lib" + fileprefix + ".a"
 
 	f, err = os.Create(newfilename)
-	check(err)
+	check(err, "Couldn't create file:", newfilename)
 	defer f.Close()
 
 	h, err = os.Create(headerfilename)
-	check(err)
+	check(err, "Couldn't create file:", headerfilename)
 	defer h.Close()
 
 
@@ -117,4 +145,12 @@ func main() {
 
 	ast.Inspect(node, collectGoVecFunctions)
 
+	// Create the object file and the library
+	runCommand("Couldn't compile with ispc",
+		   "ispc", "-O3", "--target=sse4-x2",
+			"--arch=x86-64", newfilename, "-o",
+			objfilename)
+
+	runCommand("Couldn't name static library",
+			"ar", "rcs", libfilename, objfilename)
 }

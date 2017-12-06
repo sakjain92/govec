@@ -23,29 +23,30 @@ import (
 	"fmt"
 )
 
-func _govecSaxpy(N uniform_int, alpha uniform_float32, X []uniform_float32, Y []uniform_float32) {
-	for i = range govecRange(0, N) {
+func _govecSaxpy(N govec.UniformInt, alpha govec.UniformFloat32,
+			X []govec.UniformFloat32, Y []govec.UniformFloat32) {
+	for i := range govec.Range(0, N) {
 		Y[i] += alpha * X[i]
 	}
 }
 
-func _govecSaxpy(N uniform_int, alpha uniform_float32, X []uniform_float32,
-				incX uniform_int, Y []uniform_float32, incY uniform_int) {
+// func _govecSaxpy(N govec.UniformInt, alpha govec.UniformFloat32, X []govec.UniformFloat32,
+// 				incX govec.UniformInt, Y []govec.UniformFloat32, incY govec.UniformInt) {
 
-	var xi, yi, i uniform_int
+// 	var xi, yi, i govec.UniformInt
 
-	for i = 0; i < N; i += programCount {
-		var index, xi_index, yi_index int
+// 	for i = 0; i < N; i += programCount {
+// 		var index, xi_index, yi_index int
 
-		index = i + programIndex
-		xi_index = xi + programIndex * incX 
-		yi_index = yi + programIndex * incY 
+// 		index = i + programIndex
+// 		xi_index = xi + programIndex * incX 
+// 		yi_index = yi + programIndex * incY 
 
-		Y[yi_index] += alpha * X[xi_index]
-		xi += programCount * incX
-		yi += programCount *incY
-	}
-}
+// 		Y[yi_index] += alpha * X[xi_index]
+// 		xi += programCount * incX
+// 		yi += programCount *incY
+// 	}
+// }
 
 /*
 func _govecSaxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY int) {
