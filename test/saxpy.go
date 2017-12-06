@@ -6,8 +6,8 @@ import "C"
 */
 
 
-// #cgo CFLAGS: -Igovec
-// #cgo LDFLAGS: govec/libsaxpy.a
+// #cgo CFLAGS: -Igovec_build
+// #cgo LDFLAGS: govec_build/libsaxpy.a
 // #include <saxpy.h>
 import "C"
 
@@ -24,13 +24,15 @@ import (
 	"github.com/sakjain92/govectool/govec"
 )
 
+/*
 func _govecSaxpy(N govec.UniformInt, alpha govec.UniformFloat32, X []govec.UniformFloat32, Y []govec.UniformFloat32) {
 	for i := range govec.Range(0, N) {
 		Y[i] += alpha * X[i]
 	}
 }
+*/
 
-/*
+
 func _govecSaxpy(N uniform_int, alpha uniform_float32, X []uniform_float32,
 				incX uniform_int, Y []uniform_float32, incY uniform_int) {
 
@@ -48,7 +50,7 @@ func _govecSaxpy(N uniform_int, alpha uniform_float32, X []uniform_float32,
 		yi += programCount *incY
 	}
 }
-*/
+
 
 /*
 func _govecSaxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY int) {

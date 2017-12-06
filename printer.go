@@ -106,6 +106,10 @@ type printer struct {
 	// Cache of most recently computed line position.
 	cachedPos  token.Pos
 	cachedLine int // line corresponding to cachedPos
+
+	henabled bool
+	hpresent bool
+	houtput	[]byte
 }
 
 func (p *printer) init(cfg *Config, fset *token.FileSet, nodeSizes map[ast.Node]int) {
@@ -281,6 +285,12 @@ func (p *printer) writeByte(ch byte, n int) {
 // printer benchmark by up to 10%.
 //
 func (p *printer) writeString(pos token.Position, s string, isLit bool) {
+
+	if p.hpresent && p.henabled {
+		p.houtput = append(p.houtput, []byte(" ")...)
+		p.houtput = append(p.houtput, s...)
+	}
+
 	if p.out.Column == 1 {
 		p.atLineBegin(pos)
 	}
@@ -1250,9 +1260,14 @@ type Config struct {
 }
 
 // fprint implements Fprint and takes a nodesSizes map for setting up the printer state.
-func (cfg *Config) fprint(output io.Writer, fset *token.FileSet, node interface{}, nodeSizes map[ast.Node]int) (err error) {
+func (cfg *Config) fprint(output, houtput io.Writer, fset *token.FileSet, node interface{}, nodeSizes map[ast.Node]int) (err error) {
 	// print node
 	var p printer
+
+	if houtput != nil {
+		p.hpresent = true
+	}
+
 	p.init(cfg, fset, nodeSizes)
 	if err = p.printNode(node); err != nil {
 		return
@@ -1290,6 +1305,12 @@ func (cfg *Config) fprint(output io.Writer, fset *token.FileSet, node interface{
 		return
 	}
 
+	if p.hpresent {
+		if _, err = houtput.Write(p.houtput); err != nil {
+			return
+		}
+	}
+
 	// flush tabwriter, if any
 	if tw, _ := output.(*tabwriter.Writer); tw != nil {
 		err = tw.Flush()
@@ -1311,13 +1332,18 @@ type CommentedNode struct {
 // The node type must be *ast.File, *CommentedNode, []ast.Decl, []ast.Stmt,
 // or assignment-compatible to ast.Expr, ast.Decl, ast.Spec, or ast.Stmt.
 //
-func (cfg *Config) Fprint(output io.Writer, fset *token.FileSet, node interface{}) error {
-	return cfg.fprint(output, fset, node, make(map[ast.Node]int))
+func (cfg *Config) Fprint(output, houtput io.Writer, fset *token.FileSet, node interface{}) error {
+
+	if _, err = houtput.Write([]byte("#define uniform\n")); err != nil {
+			return err
+	}
+
+	return cfg.fprint(output, houtput, fset, node, make(map[ast.Node]int))
 }
 
 // Fprint "pretty-prints" an AST node to output.
 // It calls Config.Fprint with default settings.
 //
-func Fprint(output io.Writer, fset *token.FileSet, node interface{}) error {
-	return (&Config{Tabwidth: 8}).Fprint(output, fset, node)
+func Fprint(output , houtput io.Writer, fset *token.FileSet, node interface{}) error {
+	return (&Config{Tabwidth: 8}).Fprint(output, houtput, fset, node)
 }

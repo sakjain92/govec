@@ -37,7 +37,7 @@ func check(err error, a ...interface{}) {
 }
 
 func parseFuncDecl(node *ast.FuncDecl) {
-	err := Fprint(f, fset, node)
+	err := Fprint(f, h, fset, node)
 	check(err)
 
 }
