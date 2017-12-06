@@ -10,7 +10,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/token"
 	"strconv"
@@ -2084,7 +2083,7 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 	}
 
 	c_str += ");"
-	fmt.Println(c_str)
+	g_str = c_str
 
 	p.henabled = false
 	if p.hpresent {
