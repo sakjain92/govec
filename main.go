@@ -14,8 +14,8 @@ import (
 
 const (
 	govecPreamble = "_govec"
-	uniformPreamble = "uniform_"
-	rangeFunction = "govecRange"
+	uniformPreamble = "Uniform"
+	rangeFunction = "Range"
 	govecFuncPreamble = govecPreamble
 	govecstructPreamble = govecPreamble
 )

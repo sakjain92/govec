@@ -856,21 +856,20 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		p.print("BadExpr")
 
 	case *ast.Ident:
-		if x.Name == rangeFunction {
-			// Do nothing
-		} else if strings.HasPrefix(x.Name, uniformPreamble) {
-			if (x.Name == "uniform_float32") {
-				p.print("uniform float")
-			} else {
-				p.print("uniform ", x.Name[8:])
-			}
+		// p.print("BLA")
+		// if strings.HasPrefix(x.Name, uniformPreamble) {
+		// 	if (x.Name == "UniformFloat32") {
+		// 		p.print("uniform float")
+		// 	} else {
+		// 		p.print("uniform ", x.Name[7:])
+		// 	}
+		// } else {
+		if (x.Name == "float32") {
+			p.print("float")
 		} else {
-			if (x.Name == "float32") {
-				p.print("float")
-			} else {
-				p.print(x)
-			}
+			p.print(x)
 		}
+		// }
 
 	case *ast.BinaryExpr:
 		if depth < 1 {
@@ -992,12 +991,16 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		} else {
 			wasIndented = p.possibleSelectorExpr(x.Fun, token.HighestPrec, depth)
 		}
-		if x.Fun.(*ast.Ident).Name == rangeFunction {
-			p.print(x.Args[0], " ... ", x.Args[1])
-			if wasIndented {
-				p.print(unindent)
+		switch x.Fun.(type) {
+		case *ast.SelectorExpr: 
+			if x.Fun.(*ast.SelectorExpr).X.(*ast.Ident).Name == "govec" {
+				p.print(x.Args[0], " ... ", x.Args[1])
+				if wasIndented {
+					p.print(unindent)
+				}
+				return;
 			}
-			return;
+		default:
 		}
 		p.print(x.Lparen, token.LPAREN)
 		if x.Ellipsis.IsValid() {
@@ -1093,6 +1096,16 @@ func (p *printer) possibleSelectorExpr(expr ast.Expr, prec1, depth int) bool {
 // selectorExpr handles an *ast.SelectorExpr node and returns whether x spans
 // multiple lines.
 func (p *printer) selectorExpr(x *ast.SelectorExpr, depth int, isMethod bool) bool {
+	if x.X.(*ast.Ident).Name == "govec" {
+		if strings.HasPrefix(x.Sel.Name, uniformPreamble) {
+			if (x.Sel.Name == "UniformFloat32") {
+				p.print("uniform float")
+			} else {
+				p.print("uniform ", strings.ToLower(x.Sel.Name[7:]))
+			}
+		}
+		return true
+	}
 	p.expr1(x.X, token.HighestPrec, depth)
 	p.print(token.PERIOD)
 	if line := p.lineFor(x.Sel.Pos()); p.pos.IsValid() && p.pos.Line < line {
@@ -1451,7 +1464,11 @@ func (p *printer) stmt(stmt ast.Stmt, nextIsRBrace bool) {
 				p.print(s.Value.Pos(), token.COMMA, blank)
 				p.expr(s.Value)
 			}
-			p.print(blank, s.TokPos, s.Tok, blank)
+			if(s.Tok == token.DEFINE) {
+				p.print(blank, s.TokPos, token.ASSIGN, blank)
+			} else {
+				p.print(blank, s.TokPos, s.Tok, blank)
+			}
 		}
 		p.expr(stripParens(s.X))
 		p.print(" )")
