@@ -5,30 +5,32 @@ package main
 import "C"
 */
 
-/*
+
 // #cgo CFLAGS: -Igovec
 // #cgo LDFLAGS: govec/libsaxpy.a
 // #include <saxpy.h>
 import "C"
-*/
 
 
+/*
 // #cgo CFLAGS: -Igovec
 // #cgo LDFLAGS: govec/libsaxpy_ispc.a
 // #include <saxpy.h>
 import "C"
-
+*/
 
 import (
 	"fmt"
+	"github.com/sakjain92/govectool/govec"
 )
 
-func _govecSaxpy(N uniform_int, alpha uniform_float32, X []uniform_float32, Y []uniform_float32) {
-	for i = range govecRange(0, N) {
+func _govecSaxpy(N govec.UniformInt, alpha govec.UniformFloat32, X []govec.UniformFloat32, Y []govec.UniformFloat32) {
+	for i := range govec.Range(0, N) {
 		Y[i] += alpha * X[i]
 	}
 }
 
+/*
 func _govecSaxpy(N uniform_int, alpha uniform_float32, X []uniform_float32,
 				incX uniform_int, Y []uniform_float32, incY uniform_int) {
 
@@ -38,14 +40,15 @@ func _govecSaxpy(N uniform_int, alpha uniform_float32, X []uniform_float32,
 		var index, xi_index, yi_index int
 
 		index = i + programIndex
-		xi_index = xi + programIndex * incX 
-		yi_index = yi + programIndex * incY 
+		xi_index = xi + programIndex * incX
+		yi_index = yi + programIndex * incY
 
 		Y[yi_index] += alpha * X[xi_index]
 		xi += programCount * incX
 		yi += programCount *incY
 	}
 }
+*/
 
 /*
 func _govecSaxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY int) {
