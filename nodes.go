@@ -182,7 +182,7 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 	prevLine := prev.Line
 	for i, x := range list {
 		line = p.lineFor(x.Pos())
-		
+
 		// determine if the next linebreak, if any, needs to use formfeed:
 		// in general, use the entire node size to make the decision; for
 		// key:value expressions, use the key size
@@ -194,12 +194,12 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 		// position information for the previous and next token (likely
 		// generated code - simply ignore the size in this case by setting
 		// it to 0)
-		
+
 		prevSize := size
 		const infinity = 1e6 // larger than any source line
-		write_c_str = false;
+		p.writeShadowCStr = false;
 		size = p.nodeSize(x, infinity)
-		write_c_str = true;
+		p.writeShadowCStr = true;
 		pair, isPair := x.(*ast.KeyValueExpr)
 		if size <= infinity && prev.IsValid() && next.IsValid() {
 			// x fits on a single line
@@ -248,7 +248,7 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 				p.print(blank)
 			}
 		}
-		
+
 		if len(list) > 1 && isPair && size > 0 && needsLinebreak {
 			// we have a key:value expression that fits onto one line
 			// and it's not on the same line as the prior expression:
@@ -461,16 +461,16 @@ func (p *printer) parameters(fields *ast.FieldList) {
 				}
 				p.print(token.COMMA)
 				p.print(blank)
-				c_str += ", "
+				p.shadowCStr += ", "
 			}
 
 			// parameter type
 			// p.print("BLAA")
 			switch par.Type.(type) {
 			case (*ast.ArrayType):
-				c_str += "(*"
+				p.shadowCStr += "(*"
 			}
-			c_str += "C."
+			p.shadowCStr += "C."
 			p.expr(stripParensAlways(par.Type))
 			// p.print("BLAA")
 
@@ -481,15 +481,16 @@ func (p *printer) parameters(fields *ast.FieldList) {
 			} else {
 				p.print(blank)
 			}
-			
+
 			switch par.Type.(type) {
 			case (*ast.ArrayType):
-				c_str += ")"
+				p.shadowCStr += ")"
 			}
-			c_str += "("
+
+			p.shadowCStr += "("
 			switch par.Type.(type) {
 			case (*ast.ArrayType):
-				c_str += "&"
+				p.shadowCStr += "&"
 			}
 			// parameter names
 			if len(par.Names) > 0 {
@@ -504,9 +505,10 @@ func (p *printer) parameters(fields *ast.FieldList) {
 			switch par.Type.(type) {
 			case (*ast.ArrayType):
 				p.print("[]")
-				c_str += "[0]"
+				p.shadowCStr += "[0]"
 			}
-			c_str += ") "
+
+			p.shadowCStr += ") "
 			prevLine = parLineEnd
 		}
 		// if the closing ")" is on a separate line from the last parameter,
@@ -883,14 +885,14 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		// 		p.print("uniform ", x.Name[7:])
 		// 	}
 		// } else {
-		if write_c_str {
+		if p.writeShadowCStr {
 			if(strings.HasPrefix(x.Name, "govec")) {
-				c_str += (x.Name[5:])
+				p.shadowCStr += (x.Name)
 			} else {
 				if (x.Name == "float32") {
-					c_str += "float"
+					p.shadowCStr += "float"
 				} else {
-					c_str += x.Name
+					p.shadowCStr += x.Name
 				}
 			}
 		}
@@ -899,9 +901,6 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		} else {
 			p.print(x)
 		}
-		// p.print("BLA")
-		// c_str += ("(" + x.Name + ")")
-		// }
 
 	case *ast.BinaryExpr:
 		if depth < 1 {
@@ -1024,7 +1023,7 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 			wasIndented = p.possibleSelectorExpr(x.Fun, token.HighestPrec, depth)
 		}
 		switch x.Fun.(type) {
-		case *ast.SelectorExpr: 
+		case *ast.SelectorExpr:
 			if x.Fun.(*ast.SelectorExpr).X.(*ast.Ident).Name == "govec" {
 				p.print(x.Args[0], " ... ", x.Args[1])
 				if wasIndented {
@@ -1132,10 +1131,10 @@ func (p *printer) selectorExpr(x *ast.SelectorExpr, depth int, isMethod bool) bo
 		if strings.HasPrefix(x.Sel.Name, uniformPreamble) {
 			if (x.Sel.Name == "UniformFloat32") {
 				p.print("uniform float")
-				c_str += "float"
+				p.shadowCStr += "float"
 			} else {
 				p.print("uniform ", strings.ToLower(x.Sel.Name[7:]))
-				c_str += strings.ToLower(x.Sel.Name[7:])
+				p.shadowCStr += strings.ToLower(x.Sel.Name[7:])
 			}
 		}
 		return true
@@ -1952,7 +1951,7 @@ func (p *printer) nodeSize(n ast.Node, maxSize int) (size int) {
 	// in RawFormat
 	cfg := Config{Mode: RawFormat}
 	var buf bytes.Buffer
-	if err := cfg.fprint(&buf, nil, p.fset, n, p.nodeSizes); err != nil {
+	if _, err := cfg.fprint(&buf, nil, p.fset, n, p.nodeSizes); err != nil {
 		return
 	}
 	if buf.Len() <= maxSize {
@@ -2041,7 +2040,6 @@ func (p *printer) distanceFrom(from token.Pos) int {
 }
 
 func (p *printer) funcDecl(d *ast.FuncDecl) {
-	c_str = "return C."
 
 	p.setComment(d.Doc)
 	p.print(d.Pos())
@@ -2057,6 +2055,9 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 	result := d.Type.Results
 	n := result.NumFields()
 	if n > 0 {
+
+		p.shadowCStr = "return C."
+
 		// result != nil
 		if n == 1 && result.List[0].Names == nil {
 			// single anonymous result; no ()'s
@@ -2065,14 +2066,14 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 			p.parameters(result)
 		}
 	} else if n == 0 {
+		p.shadowCStr = "C."
 		p.print("void")
 	}
 
 	p.print(blank)
 	p.expr(d.Name)
 
-	// c_str += d.Name.Name
-	c_str += "("
+	p.shadowCStr += "("
 
 	params := d.Type.Params
 
@@ -2082,8 +2083,8 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 		p.print(token.LPAREN, token.RPAREN)
 	}
 
-	c_str += ");"
-	g_str = c_str
+	p.shadowCStr += ");"
+	p.shadowStr = p.shadowCStr
 
 	p.henabled = false
 	if p.hpresent {

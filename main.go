@@ -46,7 +46,7 @@ func check(err error, a ...interface{}) {
 
 // Write a function wrapper in shadow
 func writeShadowFunctionWrapper(shadow *os.File, funcDecl, funcBody string) {
-	s := funcDecl + " {\n" + funcBody + "\n}\n";
+	s := funcDecl + " {\n" + "\t" + funcBody + "\n}\n";
 	_, err := shadow.Write([]byte(s))
 	check(err, "Couldn't write to shadow file")
 }
@@ -74,10 +74,11 @@ func getCFunctionDecl(node *ast.FuncDecl, f *token.FileSet) string {
 
 func parseFuncDecl(node *ast.FuncDecl) {
 
-	err := Fprint(f, h, fset, node)
+	shadowStr, err := Fprint(f, h, fset, node)
 	check(err)
 
-	writeShadowFunctionWrapper(shadow, getCFunctionDecl(node, fset), "")
+	writeShadowFunctionWrapper(shadow, getCFunctionDecl(node, fset),
+					shadowStr)
 }
 
 func runCommand(s string, command string, a ...string) {
@@ -147,6 +148,9 @@ func initShadowFile(shadow *os.File, shadowfilepath, pkg,
 	s = s + "// #cgo LDFLAGS: " + govecBuildDirName + "/" +
 			libfilename + "\n"
 
+	// Include header file
+	s = s + "// #include " + "<" + headerfilename + ">\n"
+
 	// Import C
 	s = s + "import \"C\"" + "\n\n"
 
@@ -159,9 +163,6 @@ func main() {
 	if len(os.Args) < 2 {
 		exit("Usage:", govecToolName, "<file.go>")
 	}
-
-	c_str = ""
-	write_c_str = true
 
 	fileName := os.Args[1]
 

@@ -17,7 +17,7 @@ func BenchmarkCSaxpy(b *testing.B) {
 	alpha = 2.0
 
 	for i := 0; i < b.N; i++ {
-		CSaxpy(count, alpha, f1, 1, f2, 1)
+		Saxpy(count, alpha, f1, 1, f2, 1)
 	}
 
 	result = f2
