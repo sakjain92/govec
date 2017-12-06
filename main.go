@@ -29,6 +29,10 @@ var shadow *os.File
 var fset *token.FileSet
 var err error
 
+var c_str string
+var g_str string
+var write_c_str bool
+
 func exit(a ...interface{}) {
 	fmt.Println(a...)
 	os.Exit(-1)
@@ -120,6 +124,8 @@ func collectGoVecFunctions(n ast.Node) bool {
 	node.Name.Name = node.Name.Name[1:]
 	parseFuncDecl(node)
 
+	fmt.Println(g_str)
+
 	// We already inspected inside of function
 	return false
 }
@@ -153,6 +159,9 @@ func main() {
 	if len(os.Args) < 2 {
 		exit("Usage:", govecToolName, "<file.go>")
 	}
+
+	c_str = ""
+	write_c_str = true
 
 	fileName := os.Args[1]
 

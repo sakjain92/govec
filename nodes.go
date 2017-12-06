@@ -182,7 +182,7 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 	prevLine := prev.Line
 	for i, x := range list {
 		line = p.lineFor(x.Pos())
-
+		
 		// determine if the next linebreak, if any, needs to use formfeed:
 		// in general, use the entire node size to make the decision; for
 		// key:value expressions, use the key size
@@ -194,9 +194,12 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 		// position information for the previous and next token (likely
 		// generated code - simply ignore the size in this case by setting
 		// it to 0)
+		
 		prevSize := size
 		const infinity = 1e6 // larger than any source line
+		write_c_str = false;
 		size = p.nodeSize(x, infinity)
+		write_c_str = true;
 		pair, isPair := x.(*ast.KeyValueExpr)
 		if size <= infinity && prev.IsValid() && next.IsValid() {
 			// x fits on a single line
@@ -207,7 +210,6 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 			// size too large or we don't have good layout information
 			size = 0
 		}
-
 		// if the previous line and the current line had single-
 		// line-expressions and the key sizes are small or the
 		// the ratio between the key sizes does not exceed a
@@ -222,7 +224,6 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 				useFF = ratio <= 1.0/r || r <= ratio
 			}
 		}
-
 		needsLinebreak := 0 < prevLine && prevLine < line
 		if i > 0 {
 			// use position of expression following the comma as
@@ -247,7 +248,7 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 				p.print(blank)
 			}
 		}
-
+		
 		if len(list) > 1 && isPair && size > 0 && needsLinebreak {
 			// we have a key:value expression that fits onto one line
 			// and it's not on the same line as the prior expression:
@@ -460,10 +461,18 @@ func (p *printer) parameters(fields *ast.FieldList) {
 				}
 				p.print(token.COMMA)
 				p.print(blank)
+				c_str += ", "
 			}
 
 			// parameter type
+			// p.print("BLAA")
+			switch par.Type.(type) {
+			case (*ast.ArrayType):
+				c_str += "(*"
+			}
+			c_str += "C."
 			p.expr(stripParensAlways(par.Type))
+			// p.print("BLAA")
 
 			// separator if needed (linebreak or blank)
 			if needsLinebreak && p.linebreak(parLineBeg, 0, ws, true) {
@@ -472,7 +481,16 @@ func (p *printer) parameters(fields *ast.FieldList) {
 			} else {
 				p.print(blank)
 			}
-
+			
+			switch par.Type.(type) {
+			case (*ast.ArrayType):
+				c_str += ")"
+			}
+			c_str += "("
+			switch par.Type.(type) {
+			case (*ast.ArrayType):
+				c_str += "&"
+			}
 			// parameter names
 			if len(par.Names) > 0 {
 				// Very subtle: If we indented before (ws == ignore), identList
@@ -486,8 +504,9 @@ func (p *printer) parameters(fields *ast.FieldList) {
 			switch par.Type.(type) {
 			case (*ast.ArrayType):
 				p.print("[]")
+				c_str += "[0]"
 			}
-
+			c_str += ") "
 			prevLine = parLineEnd
 		}
 		// if the closing ")" is on a separate line from the last parameter,
@@ -864,11 +883,24 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		// 		p.print("uniform ", x.Name[7:])
 		// 	}
 		// } else {
+		if write_c_str {
+			if(strings.HasPrefix(x.Name, "govec")) {
+				c_str += (x.Name[5:])
+			} else {
+				if (x.Name == "float32") {
+					c_str += "float"
+				} else {
+					c_str += x.Name
+				}
+			}
+		}
 		if (x.Name == "float32") {
 			p.print("float")
 		} else {
 			p.print(x)
 		}
+		// p.print("BLA")
+		// c_str += ("(" + x.Name + ")")
 		// }
 
 	case *ast.BinaryExpr:
@@ -1100,8 +1132,10 @@ func (p *printer) selectorExpr(x *ast.SelectorExpr, depth int, isMethod bool) bo
 		if strings.HasPrefix(x.Sel.Name, uniformPreamble) {
 			if (x.Sel.Name == "UniformFloat32") {
 				p.print("uniform float")
+				c_str += "float"
 			} else {
 				p.print("uniform ", strings.ToLower(x.Sel.Name[7:]))
+				c_str += strings.ToLower(x.Sel.Name[7:])
 			}
 		}
 		return true
@@ -2007,6 +2041,8 @@ func (p *printer) distanceFrom(from token.Pos) int {
 }
 
 func (p *printer) funcDecl(d *ast.FuncDecl) {
+	c_str = "return C."
+
 	p.setComment(d.Doc)
 	p.print(d.Pos())
 	if d.Recv != nil {
@@ -2035,6 +2071,9 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 	p.print(blank)
 	p.expr(d.Name)
 
+	// c_str += d.Name.Name
+	c_str += "("
+
 	params := d.Type.Params
 
 	if params != nil {
@@ -2042,6 +2081,9 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 	} else {
 		p.print(token.LPAREN, token.RPAREN)
 	}
+
+	c_str += ");"
+	g_str = c_str
 
 	p.henabled = false
 	if p.hpresent {
