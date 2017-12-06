@@ -24,6 +24,9 @@ var h *os.File
 var fset *token.FileSet
 var err error
 
+var c_str string
+var write_c_str bool
+
 func check(err error) {
     if err != nil {
         log.Fatal(err)
@@ -78,6 +81,9 @@ func main() {
 		fmt.Println("Usage: govec <filename.go>")
 		os.Exit(1)
 	}
+
+	c_str = ""
+	write_c_str = true
 
 	fileName := os.Args[1]
 
