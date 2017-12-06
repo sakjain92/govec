@@ -1,4 +1,4 @@
-package main
+package saxpy
 
 import "testing"
 
@@ -17,7 +17,7 @@ func BenchmarkCSaxpy(b *testing.B) {
 	alpha = 2.0
 
 	for i := 0; i < b.N; i++ {
-		saxpy(count, alpha, f1, 1, f2, 1)
+		CSaxpy(count, alpha, f1, 1, f2, 1)
 	}
 
 	result = f2
@@ -34,6 +34,6 @@ func BenchmarkGoSaxpy(b *testing.B) {
 
 
 	for i := 0; i < b.N; i++ {
-		_govecSaxpy(count, alpha, f1, 1, f2, 1)
+		GoSaxpy(count, alpha, f1, 1, f2, 1)
 	}
 }

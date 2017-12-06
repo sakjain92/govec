@@ -1,4 +1,4 @@
-package main
+package saxpy
 
 import (
 	"testing"
@@ -20,7 +20,7 @@ func TestSaxpy(t *testing.T) {
 		res = append(res, f2[i])
 	}
 
-	saxpy(8, alpha, f1, 1, res, 1)
+	CSaxpy(8, alpha, f1, 1, res, 1)
 
 	for i := 0; i < 8; i++ {
 		expected := alpha * f1[i] + f2[i]
