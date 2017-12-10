@@ -877,14 +877,6 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		p.print("BadExpr")
 
 	case *ast.Ident:
-		// p.print("BLA")
-		// if strings.HasPrefix(x.Name, uniformPreamble) {
-		// 	if (x.Name == "UniformFloat32") {
-		// 		p.print("uniform float")
-		// 	} else {
-		// 		p.print("uniform ", x.Name[7:])
-		// 	}
-		// } else {
 		if p.writeShadowCStr {
 			if(strings.HasPrefix(x.Name, "govec")) {
 				p.shadowCStr += (x.Name)
@@ -1135,6 +1127,13 @@ func (p *printer) selectorExpr(x *ast.SelectorExpr, depth int, isMethod bool) bo
 			} else {
 				p.print("uniform ", strings.ToLower(x.Sel.Name[7:]))
 				p.shadowCStr += strings.ToLower(x.Sel.Name[7:])
+			}
+		}
+		if strings.HasPrefix(x.Sel.Name, programPreamble) {
+			if (x.Sel.Name == "ProgramIndex") {
+				p.print("programIndex")
+			} else {
+				p.print("programCount")
 			}
 		}
 		return true
@@ -1416,7 +1415,9 @@ func (p *printer) stmt(stmt ast.Stmt, nextIsRBrace bool) {
 
 	case *ast.IfStmt:
 		p.print(token.IF)
+		p.print("(")
 		p.controlClause(false, s.Init, s.Cond, nil)
+		p.print(")")
 		p.block(s.Body, 1)
 		if s.Else != nil {
 			p.print(blank, token.ELSE, blank)
