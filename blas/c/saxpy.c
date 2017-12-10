@@ -1,3 +1,4 @@
+#include "benchmark.h"
 
 void SerialSaxpy(int N, float alpha, float X[], float Y[]) {
 	for (int i = 0; i < N; i++) {
@@ -15,10 +16,10 @@ void SerialSaxpyGeneric(int N, float alpha, float X[], int incX, float Y[],
 		return;
 	}
 
-	int xi, yi;
+	int xi = 0, yi = 0;
 
-	switch alpha {
-	case 0: 
+	switch ((int)alpha) {
+	case 0:
 		break;
 	case 1:
 		for (; N >= 2; N -= 2) {
