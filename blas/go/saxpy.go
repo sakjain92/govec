@@ -1,10 +1,10 @@
-package saxpy
+package blas
 
 import (
 	"github.com/sakjain92/govectool/govec"
 )
 
-func SerialSaxpy(N int, alpha float32, X []float32, Y []float32) {
+func SerialSaxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY int) {
 
 	for i := 0; i < N; i++ {
 		Y[i] += alpha * X[i]
@@ -69,15 +69,16 @@ func SerialSaxpyGeneric(N int, alpha float32, X []float32, incX int,
 func NativeSaxpy(N int, alpha float32, X []float32, incX int, Y []float32,
 				 incY int)
 
-func _govecSaxpy(N govec.UniformInt, alpha govec.UniformFloat32,
-				 X []govec.UniformFloat32, Y []govec.UniformFloat32) {
+func _govecISPCSaxpy(N govec.UniformInt, alpha govec.UniformFloat32,
+				 X []govec.UniformFloat32, incX govec.UniformInt,
+				 Y []govec.UniformFloat32, incY govec.UniformInt) {
 
 	for i := range govec.Range(0, N) {
 		Y[i] += alpha * X[i]
 	}
 }
 
-func _govecSaxpyGeneric(N govec.UniformInt, alpha govec.UniformFloat32,
+func _govecISPCSaxpyGeneric(N govec.UniformInt, alpha govec.UniformFloat32,
 				 X []govec.UniformFloat32, incX govec.UniformInt,
 				 Y []govec.UniformFloat32, incY govec.UniformInt) {
 
@@ -86,9 +87,9 @@ func _govecSaxpyGeneric(N govec.UniformInt, alpha govec.UniformFloat32,
 	for i = 0; i < N; i += govec.ProgramCount {
 		var index, xi_index, yi_index int
 
-		index = i + govec.ProgramIndex
-		xi_index = xi + govec.ProgramIndex * incX
-		yi_index = yi + govec.ProgramIndex * incY
+		index = (int)(i + govec.ProgramIndex)
+		xi_index = (int)(xi + govec.ProgramIndex * incX)
+		yi_index = (int)(yi + govec.ProgramIndex * incY)
 
 		Y[yi_index] += alpha * X[xi_index]
 		xi += govec.ProgramCount * incX

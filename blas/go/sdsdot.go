@@ -1,4 +1,4 @@
-package sdsdot
+package blas
 
 import (
 	"github.com/sakjain92/govectool/govec"
@@ -35,5 +35,5 @@ func _govecSdsdot(N govec.UniformInt, alpha govec.UniformFloat32,
 	for i := range govec.Range(0, N) {
 		sum += (float64)(X[i]) * (float64)(Y[i])
 	}
-	return (float32)((float64)(alpha) + govec.ReduceAdd(sum))
+	return (govec.UniformFloat32)((float64)(alpha) + govec.ReduceAddFloat64(sum))
 }

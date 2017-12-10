@@ -1022,7 +1022,7 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		case *ast.SelectorExpr:
 			if x.Fun.(*ast.SelectorExpr).X.(*ast.Ident).Name == "govec" {
 				sel := (*ast.Ident)(x.Fun.(*ast.SelectorExpr).Sel)
-				if sel.Name == "ReduceAdd" {
+				if strings.HasPrefix(sel.Name, "ReduceAdd") {
 					p.print("reduce_add(", x.Args[0], ")")
 				} else {
 					p.print(x.Args[0], " ... ", x.Args[1])
