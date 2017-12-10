@@ -85,9 +85,8 @@ func _govecISPCSaxpyGeneric(N govec.UniformInt, alpha govec.UniformFloat32,
 	var xi, yi, i govec.UniformInt
 
 	for i = 0; i < N; i += govec.ProgramCount {
-		var index, xi_index, yi_index int
+		var xi_index, yi_index int
 
-		index = (int)(i + govec.ProgramIndex)
 		xi_index = (int)(xi + govec.ProgramIndex * incX)
 		yi_index = (int)(yi + govec.ProgramIndex * incY)
 
