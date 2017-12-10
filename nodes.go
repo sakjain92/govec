@@ -883,6 +883,8 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 			} else {
 				if (x.Name == "float32") {
 					p.shadowCStr += "float"
+				} else if (x.Name == "float64") {
+					p.shadowCStr += "double"
 				} else {
 					p.shadowCStr += x.Name
 				}
@@ -890,6 +892,8 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		}
 		if (x.Name == "float32") {
 			p.print("float")
+		} else if (x.Name == "float64") {
+			p.print("double")
 		} else {
 			p.print(x)
 		}
@@ -1017,7 +1021,12 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		switch x.Fun.(type) {
 		case *ast.SelectorExpr:
 			if x.Fun.(*ast.SelectorExpr).X.(*ast.Ident).Name == "govec" {
-				p.print(x.Args[0], " ... ", x.Args[1])
+				sel := (*ast.Ident)(x.Fun.(*ast.SelectorExpr).Sel)
+				if sel.Name == "ReduceAdd" {
+					p.print("reduce_add(", x.Args[0], ")")
+				} else {
+					p.print(x.Args[0], " ... ", x.Args[1])
+				}
 				if wasIndented {
 					p.print(unindent)
 				}
@@ -1124,6 +1133,9 @@ func (p *printer) selectorExpr(x *ast.SelectorExpr, depth int, isMethod bool) bo
 			if (x.Sel.Name == "UniformFloat32") {
 				p.print("uniform float")
 				p.shadowCStr += "float"
+			} else if (x.Sel.Name == "UniformFloat64") {
+				p.print("uniform double")
+				p.shadowCStr += "double"
 			} else {
 				p.print("uniform ", strings.ToLower(x.Sel.Name[7:]))
 				p.shadowCStr += strings.ToLower(x.Sel.Name[7:])
@@ -2058,7 +2070,7 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 	if n > 0 {
 
 		p.shadowCStr = "return C."
-
+		p.writeShadowCStr = false;
 		// result != nil
 		if n == 1 && result.List[0].Names == nil {
 			// single anonymous result; no ()'s
@@ -2066,6 +2078,7 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 		} else {
 			p.parameters(result)
 		}
+		p.writeShadowCStr = true;
 	} else if n == 0 {
 		p.shadowCStr = "C."
 		p.print("void")
