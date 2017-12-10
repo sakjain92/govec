@@ -3,13 +3,21 @@ package govec
 type UniformInt		int
 type UniformFloat32	float32
 type UniformFloat64	float64
-var ProgramIndex int
-var ProgramCount int
+var ProgramIndex	UniformInt
+var ProgramCount	UniformInt
 
 func Range(a ...interface{}) []struct{} {
 	panic("Range: Dummy function. Can't run this")
 }
 
-func ReduceAdd(a ...interface{}) interface{} {
+func ReduceAddInt(a int) int {
+	panic("ReduceAdd: Dummy function. Can't run this")
+}
+
+func ReduceAddFloat32(a float32) float32 {
+	panic("ReduceAdd: Dummy function. Can't run this")
+}
+
+func ReduceAddFloat64(a float64) float64 {
 	panic("ReduceAdd: Dummy function. Can't run this")
 }
