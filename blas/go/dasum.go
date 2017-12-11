@@ -1,10 +1,10 @@
+//+build !ASSEMBLY
+
 package blas
 
 import (
 	"github.com/sakjain92/govectool/govec"
 )
-
-func NativeDasum(N int, X []float64, incX int) float64
 
 func SerialDasum(N int, X []float64) float64 {
 	var (
@@ -43,11 +43,11 @@ func _govecDasum(N govec.UniformInt, X []govec.UniformFloat64,
 	var sum, x float64
 
 	for i := range govec.Range(0, N) {
-		x = float64(X[i])
+		x = (float64)(X[i])
 		if x < 0 {
 			x = -x
 		}
 		sum += x
 	}
-	return govec.UniformFloat64(govec.ReduceAddFloat64(sum))
+	return (govec.UniformFloat64)(govec.ReduceAddFloat64(sum))
 }

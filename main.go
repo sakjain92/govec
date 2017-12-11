@@ -143,8 +143,11 @@ func collectGoVecFunctions(n ast.Node) bool {
 func initShadowFile(shadow *os.File, shadowfilepath, pkg,
 			libfilename, headerfilename string) {
 
+	// C and Goasm doesn't compile together currently
+	s := "// +build !ASSEMBLY\n\n"
+
 	// Write package name
-	s := "package " + pkg + "\n\n"
+	s = s + "package " + pkg + "\n\n"
 
 	// Add warning
 	s = s + "/* DON'T MODIFY THIS FILE." +

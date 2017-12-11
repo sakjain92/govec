@@ -1,11 +1,10 @@
+//+build !ASSEMBLY
+
 package blas
 
 import (
 	"github.com/sakjain92/govectool/govec"
 )
-
-// \alpha + X^T Y  computed using float64
-func NativeSdsdot(N int, alpha float32, X []float32, incX int, Y []float32, incY int) float32
 
 func SerialSdsdotGeneric(N int, alpha float32, X []float32, incX int, Y []float32, incY int) float32 {
 	var (

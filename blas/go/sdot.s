@@ -1,3 +1,5 @@
+//+build ASSEMBLY
+
 // func NativeSdot(N int, X []float32, incX int, Y []float32, incY int) float32
 TEXT ·NativeSdot(SB), 7, $0
 	MOVQ	N+0(FP), BP
@@ -89,7 +91,7 @@ with_stride:
 		// Update data pointers using long strides
 		ADDQ	CX, SI
 		ADDQ	DX, DI
-		
+
 		// Create two full-vectors
 		MOVLHPS	X4, X2
 		MOVLHPS	X5, X3

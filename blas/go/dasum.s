@@ -1,3 +1,5 @@
+//+build ASSEMBLY
+
 // func NativeDasum(N int, X []float64, incX int) float64
 TEXT ·NativeDasum(SB), 7, $0
 	MOVQ	N+0(FP), BP
@@ -16,7 +18,7 @@ TEXT ·NativeDasum(SB), 7, $0
 	XORPD	X1, X1
 
 	// Setup mask for sign bit clear
-	PCMPEQL	X3, X3 
+	PCMPEQL	X3, X3
 	PSRLQ	$1, X3
 
 	// Setup stride
@@ -50,7 +52,7 @@ TEXT ·NativeDasum(SB), 7, $0
 		JGE		full_simd_loop	// There are 4 or more values to process
 
 	JMP	hsum
-	
+
 with_stride:
 	// Setup long stride
 	MOVQ	AX, CX

@@ -1,3 +1,5 @@
+//+build ASSEMBLY
+
 // func NativeSdsdot(N int, alpha float32, X []float32, incX int, Y []float32, incY int) float32
 TEXT ·NativeSdsdot(SB), 7, $0
 	MOVQ	N+0(FP), BP
@@ -44,7 +46,7 @@ TEXT ·NativeSdsdot(SB), 7, $0
 		// Move two high pairs to low part of another registers
 		MOVHLPS	X2, X4
 		MOVHLPS	X3, X5
-		
+
 		// Convert to float64
 		CVTPS2PD X2, X2
 		CVTPS2PD X3, X3
@@ -136,7 +138,7 @@ rest:
 		// Load one pair
 		MOVSS	(SI), X2
 		MOVSS	(DI), X3
-		
+
 		// Convert them to float64 and multiply
 		CVTSS2SD	X2, X2
 		CVTSS2SD	X3, X3
@@ -159,7 +161,7 @@ end:
 	ADDSD		X1, X0
 
 	// Convert result to float32 and return
-	CVTSD2SS	X0, X0	
+	CVTSD2SS	X0, X0
 	MOVSS		X0, r+80(FP)
 	RET
 

@@ -1,3 +1,5 @@
+//+build !ASSEMBLY
+
 package blas
 
 import (
@@ -65,9 +67,6 @@ func SerialSaxpyGeneric(N int, alpha float32, X []float32, incX int,
 		}
 	}
 }
-
-func NativeSaxpy(N int, alpha float32, X []float32, incX int, Y []float32,
-				 incY int)
 
 func _govecISPCSaxpy(N govec.UniformInt, alpha govec.UniformFloat32,
 				 X []govec.UniformFloat32, incX govec.UniformInt,

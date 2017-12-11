@@ -1,3 +1,5 @@
+//+build ASSEMBLY
+
 //func NativeSaxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY int)
 TEXT ·NativeSaxpy(SB), 7, $0
 	MOVQ	N+0(FP), BP
@@ -28,7 +30,7 @@ TEXT ·NativeSaxpy(SB), 7, $0
 	JGE		panic
 
 	// Check that is there any work to do
-	UCOMISS	X0, X7	
+	UCOMISS	X0, X7
 	JE	end	// alpha == 0
 
 	// Setup strides
@@ -270,7 +272,7 @@ rest_diff:
 	// Check that are there any value to process
 	JE	end
 	loop_diff:
-		// Load from Y 
+		// Load from Y
 		MOVSS	(DI), X2
 		// Save sum in Y
 		SUBSS	(SI), X2

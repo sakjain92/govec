@@ -1,11 +1,10 @@
+//+build !ASSEMBLY
+
 package blas
 
 import (
 	"github.com/sakjain92/govectool/govec"
 )
-
-// Scalar product: X^T Y
-func NativeSdot(N int, X []float32, incX int, Y []float32, incY int) float32
 
 func SerialSdot(N int, X []float32, Y []float32) float32 {
 	var (
