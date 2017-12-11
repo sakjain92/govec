@@ -64,6 +64,7 @@ func getCFunctionDecl(node *ast.FuncDecl, f *token.FileSet) string {
 
 	// Replacements
 	s = strings.Replace(s, "govec.UniformFloat32", "float32", -1)
+	s = strings.Replace(s, "govec.UniformFloat64", "float64", -1)
 	s = strings.Replace(s, "govec.UniformInt", "int", -1)
 	s = strings.Replace(s, "_govec", "", -1)
 

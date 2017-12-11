@@ -2,6 +2,8 @@
 
 package blas
 
+//go:generate govectool sdsdot.go
+
 import (
 	"github.com/sakjain92/govectool/govec"
 )

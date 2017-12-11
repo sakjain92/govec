@@ -6,6 +6,8 @@ import (
 	"github.com/sakjain92/govectool/govec"
 )
 
+//go:generate govectool sdot.go
+
 func SerialSdot(N int, X []float32, Y []float32) float32 {
 	var (
 		sum float32

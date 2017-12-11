@@ -2,6 +2,8 @@
 
 package blas
 
+//go:generate govectool saxpy.go
+
 import (
 	"github.com/sakjain92/govectool/govec"
 )

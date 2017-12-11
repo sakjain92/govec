@@ -1048,7 +1048,7 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 				if wasIndented {
 					p.print(unindent)
 				}
-				if(is_range) {					
+				if(is_range) {
 					return;
 				}
 			}
@@ -1143,7 +1143,7 @@ func (p *printer) possibleSelectorExpr(expr ast.Expr, prec1, depth int) bool {
 		if sel.Name == "UniformFloat32" {
 			p.print("(float)")
 			return true
-		} else if sel.Name == "UniformFloat32" {
+		} else if sel.Name == "UniformFloat64" {
 			p.print("(double)")
 			return true
 		} else if sel.Name == "UniformInt" {
@@ -1158,13 +1158,13 @@ func (p *printer) possibleSelectorExpr(expr ast.Expr, prec1, depth int) bool {
 			if sel.Name == "UniformFloat32" {
 				p.print("(float)")
 				return true
-			} else if sel.Name == "UniformFloat32" {
+			} else if sel.Name == "UniformFloat64" {
 				p.print("(double)")
 				return true
 			} else if sel.Name == "UniformInt" {
 				p.print("(",strings.ToLower(sel.Name[7:]),")")
 				return true
-			}	
+			}
 		}
 	}
 	p.expr1(expr, prec1, depth)
