@@ -36,6 +36,7 @@ typedef struct test {
 	unsigned long long startTicks;
 	unsigned long long stopTicks;
 	int stopped;
+	int itr;		/* Iteration number */
 } test_t;
 
 #define DEF_TEST(x) {#x, x ##Test, {{0}, {0}}, 0, 0, 0}
@@ -191,7 +192,12 @@ void stopTime(test_t *test)
 	}
 }
 
-double getTestTimens(test_t *test, double secPerTick)
+int isFirst(test_t *test)
+{
+	return test->itr == 0;
+}
+
+static double getTestTimens(test_t *test, double secPerTick)
 {
 	unsigned long long ticks = test->stopTicks - test->startTicks;
 
@@ -204,13 +210,14 @@ double getTestTimens(test_t *test, double secPerTick)
 #endif
 }
 
-void initTest(test_t *test)
+static void initTest(test_t *test, int itr)
 {
 	resetTime(test);
 	test->stopped = 0;
+	test->itr = itr;
 }
 
-void finishTest(test_t *test)
+static void finishTest(test_t *test)
 {
 	stopTime(test);
 }
@@ -237,7 +244,7 @@ int main(void)
 
 		for (j = 0; j < MAX_SAMPLES; j++) {
 
-			initTest(test);
+			initTest(test, j);
 			tests[i].func(test);
 			finishTest(test);
 			test->outval.time[j] = getTestTimens(test, secPerTick);

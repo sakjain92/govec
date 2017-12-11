@@ -15,6 +15,7 @@ float frand()
 	return (float)(rand())/ (float)(RAND_MAX);
 }
 
+/* Saxpy */
 static void SaxpyTest(enum saxpyFunc num, test_t *test)
 {
 	int i, count = 100000;
@@ -25,14 +26,17 @@ static void SaxpyTest(enum saxpyFunc num, test_t *test)
 	(void)i;
 	(void)res;
 	alpha = 1;
-/*
-	alpha = frand();
 
-	for (i = 0; i < count; i++) {
-		X[i] = Y[i] = frand();
-		res[i] = X[i] * alpha + Y[i];
+	int first = isFirst(test);
+	if (first) {
+		alpha = frand();
+
+		for (i = 0; i < count; i++) {
+			X[i] = Y[i] = frand();
+			res[i] = X[i] * alpha + Y[i];
+		}
 	}
-*/
+
 	switch (num) {
 	case SERIAL:
 		resetTime(test);
@@ -52,11 +56,12 @@ static void SaxpyTest(enum saxpyFunc num, test_t *test)
 	default:
 		assert(0);
 	}
-/*
-	for (i = 0; i < count; i++) {
-		assert(Y[i] == res[i]);
+
+	if (first) {
+		for (i = 0; i < count; i++) {
+			assert(Y[i] == res[i]);
+		}
 	}
-*/
 }
 
 void SerialSaxpyTest(test_t *test)
