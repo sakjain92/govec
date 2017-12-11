@@ -1,4 +1,4 @@
-package dasum
+package blas
 
 import (
 	"github.com/sakjain92/govectool/govec"
@@ -38,16 +38,16 @@ func SerialDasumGeneric(N int, X []float64, incX int) float64 {
 	return a
 }
 
-func _govecDasum(N govec.UniformInt, X []govec.UniformFloat64, 
+func _govecDasum(N govec.UniformInt, X []govec.UniformFloat64,
 				 incX govec.UniformInt) govec.UniformFloat64 {
 	var sum, x float64
 
 	for i := range govec.Range(0, N) {
-		x = X[i]
+		x = float64(X[i])
 		if x < 0 {
 			x = -x
 		}
 		sum += x
 	}
-	return govec.ReduceAdd(sum)
+	return govec.UniformFloat64(govec.ReduceAddFloat64(sum))
 }

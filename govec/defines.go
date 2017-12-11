@@ -10,7 +10,7 @@ func Range(a ...interface{}) []struct{} {
 	panic("Range: Dummy function. Can't run this")
 }
 
-func DoubleRange(a ...interface{}) []struct{} {
+func DoubleRange(a ...interface{}) bool {
 	panic("DoubleRange: Dummy function. Can't run this")
 }
 

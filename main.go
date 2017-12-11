@@ -163,6 +163,11 @@ func initShadowFile(shadow *os.File, shadowfilepath, pkg,
 	// Import C
 	s = s + "import \"C\"" + "\n\n"
 
+	s = s + "import \"unsafe\"" + "\n\n"
+
+	s = s + "var unused_" + headerfilename[:len(headerfilename) - 2] +
+			" unsafe.Pointer\n\n"
+
 	_, err := shadow.Write([]byte(s))
 	check(err, "Couldn't write to file:", shadowfilepath)
 }
