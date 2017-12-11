@@ -490,7 +490,7 @@ func (p *printer) parameters(fields *ast.FieldList) {
 			p.shadowCStr += "("
 			switch par.Type.(type) {
 			case (*ast.ArrayType):
-				p.shadowCStr += "&"
+				p.shadowCStr += "unsafe.Pointer(&"
 			}
 			// parameter names
 			if len(par.Names) > 0 {
@@ -505,7 +505,7 @@ func (p *printer) parameters(fields *ast.FieldList) {
 			switch par.Type.(type) {
 			case (*ast.ArrayType):
 				p.print("[]")
-				p.shadowCStr += "[0]"
+				p.shadowCStr += "[0])"
 			}
 
 			p.shadowCStr += ") "
