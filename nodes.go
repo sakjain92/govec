@@ -1011,6 +1011,7 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		p.print(x.Rbrack, token.RBRACK)
 
 	case *ast.CallExpr:
+
 		if len(x.Args) > 1 {
 			depth++
 		}
@@ -1023,26 +1024,33 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		} else {
 			wasIndented = p.possibleSelectorExpr(x.Fun, token.HighestPrec, depth)
 		}
+		is_range := false;
 		switch x.Fun.(type) {
 		case *ast.SelectorExpr:
 			if x.Fun.(*ast.SelectorExpr).X.(*ast.Ident).Name == "govec" {
 				sel := (*ast.Ident)(x.Fun.(*ast.SelectorExpr).Sel)
+				is_range = true;
 				if strings.HasPrefix(sel.Name, "ReduceAdd") {
 					p.print("reduce_add(", x.Args[0], ")")
 				} else if strings.HasPrefix(sel.Name, "DoubleRange") {
 					p.print(x.Args[0], " = ", x.Args[1], " ... ", x.Args[2], ", ",
 							 x.Args[3], " = ", x.Args[4],  " ... ", x.Args[5])
-				} else {
+				} else if strings.HasPrefix(sel.Name, "Range") {
 					if len(x.Args) == 3 {
 						p.print(x.Args[0], " = ", x.Args[1], " ... ", x.Args[2])
 					} else {
 						p.print(x.Args[0], " ... ", x.Args[1])
 					}
+				} else {
+					is_range = false;
+					// Do nothing
 				}
 				if wasIndented {
 					p.print(unindent)
 				}
-				return;
+				if(is_range) {					
+					return;
+				}
 			}
 		default:
 		}
@@ -1131,7 +1139,33 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 
 func (p *printer) possibleSelectorExpr(expr ast.Expr, prec1, depth int) bool {
 	if x, ok := expr.(*ast.SelectorExpr); ok {
+		sel := expr.(*ast.SelectorExpr).Sel
+		if sel.Name == "UniformFloat32" {
+			p.print("(float)")
+			return true
+		} else if sel.Name == "UniformFloat32" {
+			p.print("(double)")
+			return true
+		} else if sel.Name == "UniformInt" {
+			p.print("(",strings.ToLower(sel.Name[7:]),")")
+			return true
+		}
 		return p.selectorExpr(x, depth, true)
+	}
+	if x, ok := expr.(*ast.ParenExpr); ok {
+		if y, ok := x.X.(*ast.SelectorExpr); ok {
+			sel := y.Sel
+			if sel.Name == "UniformFloat32" {
+				p.print("(float)")
+				return true
+			} else if sel.Name == "UniformFloat32" {
+				p.print("(double)")
+				return true
+			} else if sel.Name == "UniformInt" {
+				p.print("(",strings.ToLower(sel.Name[7:]),")")
+				return true
+			}	
+		}
 	}
 	p.expr1(expr, prec1, depth)
 	return false
