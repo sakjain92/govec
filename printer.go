@@ -114,6 +114,7 @@ type printer struct {
 	shadowStr  string
 	shadowCStr string
 	writeShadowCStr bool
+	writeReturnType bool
 }
 
 func (p *printer) init(cfg *Config, fset *token.FileSet, nodeSizes map[ast.Node]int) {
@@ -1269,6 +1270,7 @@ func (cfg *Config) fprint(output, houtput io.Writer, fset *token.FileSet, node i
 	var p printer
 
 	p.writeShadowCStr = true
+	p.writeReturnType = false
 
 	if houtput != nil {
 		p.hpresent = true

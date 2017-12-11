@@ -15,6 +15,7 @@ import (
 
 const (
 	govecPreamble = "_govec"
+	govecNoExportPreamble = "__govec"
 	uniformPreamble = "Uniform"
 	programPreamble = "Program"
 	rangeFunction = "Range"
@@ -78,6 +79,12 @@ func parseFuncDecl(node *ast.FuncDecl) {
 					shadowStr)
 }
 
+func parseFuncDeclNoExport(node *ast.FuncDecl) {
+
+	_, err := Fprint(f, h, fset, node)
+	check(err)
+}
+
 func runCommand(s string, command string, a ...string) {
 	var out bytes.Buffer
 
@@ -115,8 +122,15 @@ func collectGoVecFunctions(n ast.Node) bool {
 	node := ret
 
 	if !strings.HasPrefix(node.Name.Name, govecFuncPreamble) {
-		// Not a function we are interested
+		if !strings.HasPrefix(node.Name.Name, govecNoExportPreamble) {
+			return false
+		}
+
+		parseFuncDeclNoExport(node)
+		node.Name.Name = node.Name.Name[7:]
 		return false
+
+		// Not a function we are interested
 	}
 
 	node.Name.Name = node.Name.Name[1:]
