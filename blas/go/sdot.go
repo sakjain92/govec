@@ -36,7 +36,7 @@ func _govecSdot(N govec.UniformInt, X []govec.UniformFloat32,
 	var sum float32
 
 	for i := range govec.Range(0, N) {
-		sum += float32(X[i] * Y[i])
+		sum += (float32)(X[i] * Y[i])
 	}
 	return  govec.UniformFloat32(govec.ReduceAddFloat32(sum))
 }

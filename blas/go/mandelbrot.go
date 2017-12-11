@@ -1,4 +1,4 @@
-package mandelbrot
+package blas
 
 import (
     "github.com/sakjain92/govectool/govec"
@@ -8,7 +8,7 @@ func mandel(c_re float32 , c_im float32 , count int) int {
     var z_re float32
     var z_im float32
 
-    x_re = c_re
+    z_re = c_re
     z_im = c_im
 
     var i int
@@ -39,8 +39,8 @@ func SerialMandelbrot(
     var dx, dy float32
     var endRow, i, j int
 
-    dx = (x1 - x0) / width
-    dy = (y1 - y0) / height
+    dx = (x1 - x0) / float32(width)
+    dy = (y1 - y0) / float32(height)
 
     endRow = startRow + totalRows
 
@@ -50,8 +50,8 @@ func SerialMandelbrot(
             var x, y float32
             var index int
 
-            x = x0 + i * dx
-            y = y0 + j * dy
+            x = x0 + float32(i) * dx
+            y = y0 + float32(j) * dy
 
             index = (j * width + i)
             output[index] = mandel(x, y, maxIterations)
@@ -95,18 +95,18 @@ func _govecMandelbrot(
     var dx, dy float32
     var i, j int
 
-    dx = (x1 - x0) / width
-    dy = (y1 - y0) / height
+    dx = (float32)(x1 - x0) / (float32)(width)
+    dy = (float32)(y1 - y0) / (float32)(height)
 
     for govec.DoubleRange(j, 0, height, i, 0, width) {
         var x, y float32
         var index int
 
-        x = x0 + i * dx
-        y = y0 + j * dy
+        x = (float32)(x0) + (float32)(i) * dx
+        y = (float32)(y0) + (float32)(j) * dy
 
-        index = (j * width + i)
-        output[index] = __govecMandel(x, y, maxIterations)
+        index = (j * (int)(width) + i)
+        output[index] = (govec.UniformInt)(__govecMandel(x, y, (int)(maxIterations)))
     }
 }
 
