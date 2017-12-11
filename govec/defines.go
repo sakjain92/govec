@@ -1,6 +1,8 @@
 package govec
 
 type UniformInt		int
+type UniformInt32	int32
+type UniformInt64	int64
 type UniformFloat32	float32
 type UniformFloat64	float64
 var ProgramIndex	UniformInt

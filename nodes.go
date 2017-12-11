@@ -1146,6 +1146,12 @@ func (p *printer) possibleSelectorExpr(expr ast.Expr, prec1, depth int) bool {
 		} else if sel.Name == "UniformFloat64" {
 			p.print("(double)")
 			return true
+		} else if sel.Name == "UniformInt32" {
+			p.print("(int32)")
+			return true
+		} else if sel.Name == "UniformInt64" {
+			p.print("(int64)")
+			return true
 		} else if sel.Name == "UniformInt" {
 			p.print("(",strings.ToLower(sel.Name[7:]),")")
 			return true
@@ -1160,6 +1166,12 @@ func (p *printer) possibleSelectorExpr(expr ast.Expr, prec1, depth int) bool {
 				return true
 			} else if sel.Name == "UniformFloat64" {
 				p.print("(double)")
+				return true
+			} else if sel.Name == "UniformInt32" {
+				p.print("(int32)")
+				return true
+			} else if sel.Name == "UniformInt64" {
+				p.print("(int64)")
 				return true
 			} else if sel.Name == "UniformInt" {
 				p.print("(",strings.ToLower(sel.Name[7:]),")")

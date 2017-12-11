@@ -66,6 +66,8 @@ func getCFunctionDecl(node *ast.FuncDecl, f *token.FileSet) string {
 	s = strings.Replace(s, "govec.UniformFloat32", "float32", -1)
 	s = strings.Replace(s, "govec.UniformFloat64", "float64", -1)
 	s = strings.Replace(s, "govec.UniformInt", "int", -1)
+	s = strings.Replace(s, "govec.UniformInt32", "int32", -1)
+	s = strings.Replace(s, "govec.UniformInt64", "int64", -1)
 	s = strings.Replace(s, "_govec", "", -1)
 
 	return s
@@ -139,6 +141,22 @@ func collectGoVecFunctions(n ast.Node) bool {
 
 	// We already inspected inside of function
 	return false
+}
+
+func initHeaderFile(header *os.File, headerfilepath string) {
+
+	// Uniform keyword is not of C's concern
+	s := "#define uniform\n"
+
+	// Go doesn't know about int64_t and int32_t
+	// Unfortunately, it currently only knows int, long and long long
+	// TODO: Will this cause issues?
+	s = s + "#define int32 int\n"
+	s = s + "#define int64 long long\n"
+	s = s + "\n"
+
+	_, err := header.Write([]byte(s))
+	check(err, "Couldn't write to file:", headerfilepath)
 }
 
 func initShadowFile(shadow *os.File, shadowfilepath, pkg,
@@ -226,6 +244,8 @@ func main() {
 	h, err = os.Create(headerfilepath)
 	check(err, "Couldn't create file:", headerfilepath)
 	defer h.Close()
+
+	initHeaderFile(h, headerfilepath)
 
 	shadow, err = os.Create(shadowfilepath)
 	check(err, "Couldn't create file:", shadowfilepath)

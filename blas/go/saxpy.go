@@ -10,6 +10,10 @@ import (
 
 func SerialSaxpy(N int, alpha float32, X []float32, incX int, Y []float32, incY int) {
 
+	if incX != 1 || incY != 1 {
+		panic("Wrong arguments")
+	}
+
 	for i := 0; i < N; i++ {
 		Y[i] += alpha * X[i]
 	}

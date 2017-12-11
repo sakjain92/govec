@@ -44,3 +44,17 @@ func TestISPCSaxpy(t *testing.T) {
 func TestISPCSaxpyGeneric(t *testing.T) {
 	helperTestSaxpy(t, ISPCSaxpyGeneric)
 }
+
+/* Mandlebrot */
+func BenchmarkSerialMandelBrot(b *testing.B) {
+	helperBenchmarkMandelbrot(b, SerialMandelbrot)
+}
+
+func BenchmarkISPCMandleBrot(b *testing.B) {
+	helperBenchmarkMandelbrot(b, ISPCMandelbrot)
+}
+
+func TestBothMandleBrot(t *testing.T) {
+	helperTestMandelbrot(t, SerialMandelbrot, ISPCMandelbrot)
+}
+

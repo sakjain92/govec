@@ -8,15 +8,15 @@ import (
     "github.com/sakjain92/govectool/govec"
 )
 
-func mandel(c_re float32 , c_im float32 , count int) int {
+func mandel(c_re float32 , c_im float32 , count int) int32 {
     var z_re float32
     var z_im float32
 
     z_re = c_re
     z_im = c_im
 
-    var i int
-    for i = 0; i < count; i++ {
+    var i int32
+    for i = 0; i < (int32)(count); i++ {
 
         var new_re, new_im float32
 
@@ -38,7 +38,7 @@ func SerialMandelbrot(
     width int, height int,
     startRow int, totalRows int,
     maxIterations int,
-    output []int) {
+    output []int32) {
 
     var dx, dy float32
     var endRow, i, j int
@@ -63,15 +63,15 @@ func SerialMandelbrot(
     }
 }
 
-func __govecMandel(c_re float32 , c_im float32 , count int) int {
+func __govecISPCMandel(c_re float32 , c_im float32 , count int) int32 {
     var z_re float32
     var z_im float32
 
     z_re = c_re
     z_im = c_im
 
-    var i int
-    for i = 0; i < count; i++ {
+    var i int32
+    for i = 0; i < (int32)(count); i++ {
 
         var new_re, new_im float32
 
@@ -88,21 +88,24 @@ func __govecMandel(c_re float32 , c_im float32 , count int) int {
     return i
 }
 
-func _govecMandelbrot(
+func _govecISPCMandelbrot(
             x0 govec.UniformFloat32, y0 govec.UniformFloat32,
             x1 govec.UniformFloat32, y1 govec.UniformFloat32,
             width govec.UniformInt, height govec.UniformInt,
             startRow govec.UniformInt, totalRows govec.UniformInt,
             maxIterations govec.UniformInt,
-            output []govec.UniformInt) {
+            output []govec.UniformInt32) {
 
     var dx, dy float32
     var i, j int
+    var endRow govec.UniformInt
 
     dx = (float32)(x1 - x0) / (float32)(width)
     dy = (float32)(y1 - y0) / (float32)(height)
 
-    for govec.DoubleRange(j, 0, height, i, 0, width) {
+    endRow = startRow + totalRows
+
+    for govec.DoubleRange(j, startRow, endRow, i, 0, width) {
         var x, y float32
         var index int
 
@@ -110,7 +113,7 @@ func _govecMandelbrot(
         y = (float32)(y0) + (float32)(j) * dy
 
         index = (j * (int)(width) + i)
-        output[index] = (govec.UniformInt)(__govecMandel(x, y, (int)(maxIterations)))
+        output[index] = (govec.UniformInt32)(__govecISPCMandel(x, y, (int)(maxIterations)))
     }
 }
 

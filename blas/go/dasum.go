@@ -6,11 +6,16 @@ import (
 	"github.com/sakjain92/govectool/govec"
 )
 
-func SerialDasum(N int, X []float64) float64 {
+func SerialDasum(N int, X []float64, incX int) float64 {
 	var (
 		a  float64
 		i int
 	)
+
+	if incX != 1 {
+		panic("Wrong arguments")
+	}
+
 	for ; N > 0; N-- {
 		x := X[i]
 		if x < 0 {
@@ -27,6 +32,7 @@ func SerialDasumGeneric(N int, X []float64, incX int) float64 {
 		a  float64
 		xi int
 	)
+
 	for ; N > 0; N-- {
 		x := X[xi]
 		if x < 0 {

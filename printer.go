@@ -37,17 +37,17 @@ const (
 
 // Go types to C
 var ctypes map[string]string = map[string]string {
-    "int8"	: "int8_t",
-    "int16"	: "int16_t",
-    "int32"	: "int32_t",
-    "int64"	: "int64_t",
+    "int8"	: "int8",
+    "int16"	: "int16",
+    "int32"	: "int32",
+    "int64"	: "int64",
     "uint"	: "unsigned int",
-    "uint8"	: "uint8_t",
-    "uint16"	: "uint16_t",
-    "uint32"	: "uint32_t",
-    "uint64"	: "uint64_t",
-    "byte"	: "uint8_t",
-    "rune"	: "int32_t",
+    "uint8"	: "unsigned int8",
+    "uint16"	: "unsigned int16",
+    "uint32"	: "unsigned int32",
+    "uint64"	: "unsigned int64",
+    "byte"	: "unsigned int8",
+    "rune"	: "int32",
     "float32"	: "float",
     "float64"	: "double",
     "complex64"	: "double",
@@ -1342,10 +1342,6 @@ type CommentedNode struct {
 // or assignment-compatible to ast.Expr, ast.Decl, ast.Spec, or ast.Stmt.
 //
 func (cfg *Config) Fprint(output, houtput io.Writer, fset *token.FileSet, node interface{}) (string, error) {
-
-	if _, err = houtput.Write([]byte("#define uniform\n")); err != nil {
-			return "", err
-	}
 
 	return cfg.fprint(output, houtput, fset, node, make(map[ast.Node]int))
 }
