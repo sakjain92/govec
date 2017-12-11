@@ -5,8 +5,8 @@ IFLAGS=--target=sse4-x2 --arch=x86-64 -O3
 #IFLAGS=--target=avx --arch=x86-64 -O3
 DEPS = benchmark.h test.h Makefile
 
-CTESTS=saxpy.o test.o
-ITESTS=saxpy_ispc.o
+CTESTS=saxpy.o test.o mandelbrot.o
+ITESTS=saxpy_ispc.o mandelbrot_ispc.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

@@ -9,7 +9,7 @@
 #include "time.h"
 
 /* Number of samples per test */
-#define MAX_SAMPLES	10000
+#define MAX_SAMPLES	1000
 
 /* Name of test case */
 #define MAX_NAME	100
@@ -44,6 +44,8 @@ test_t tests[] = {
 	DEF_TEST(SerialSaxpy),
 	DEF_TEST(SerialSaxpyGeneric),
 	DEF_TEST(ISPCSaxpy),
+	DEF_TEST(SerialMandelbrot),
+	DEF_TEST(ISPCMandelbrot),
 	//DEF_TEST(Sleep),
 };
 

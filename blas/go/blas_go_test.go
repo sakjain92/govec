@@ -50,7 +50,7 @@ func BenchmarkSerialMandelBrot(b *testing.B) {
 	helperBenchmarkMandelbrot(b, SerialMandelbrot)
 }
 
-func BenchmarkISPCMandleBrot(b *testing.B) {
+func BenchmarkISPCMandelBrot(b *testing.B) {
 	helperBenchmarkMandelbrot(b, ISPCMandelbrot)
 }
 

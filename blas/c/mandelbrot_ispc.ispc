@@ -15,16 +15,19 @@ static inline int mandel(float c_re, float c_im, int count) {
     return i;
 }
 
-export void ISPCMandelbrot(uniform float x0, uniform float y0, 
+export void ISPCMandelbrot(uniform float x0, uniform float y0,
                             uniform float x1, uniform float y1,
-                            uniform int width, uniform int height, 
+                            uniform int width, uniform int height,
+			    uniform int startRow, uniform int totalRows,
                             uniform int maxIterations,
                             uniform int output[])
 {
     float dx = (x1 - x0) / width;
     float dy = (y1 - y0) / height;
 
-    foreach (j = 0 ... height, i = 0 ... width) {
+    uniform int endRow = startRow + totalRows;
+
+    foreach (j = startRow ... endRow, i = 0 ... width) {
             float x = x0 + i * dx;
             float y = y0 + j * dy;
 

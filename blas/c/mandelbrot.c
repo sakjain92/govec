@@ -15,7 +15,6 @@ static inline int mandel(float c_re, float c_im, int count)
 
     return i;
 }
-s
 
 void SerialMandelbrot(
     float x0, float y0, float x1, float y1,

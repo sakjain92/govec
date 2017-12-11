@@ -61,10 +61,12 @@ type mandlebrotFunc func(x0 float32, y0 float32, x1 float32, y1 float32,
 			width int, height int, startRow int, totalRows int,
 			maxIterations int, output []int32)
 
-func helperBenchmarkMandelbrot(t *testing.B, fn mandlebrotFunc) {
+func helperBenchmarkMandelbrot(b *testing.B, fn mandlebrotFunc) {
 
-	var width int = 1200;
-	var height int = 800;
+	b.StopTimer()
+
+	var width int = 120;
+	var height int = 80;
 	var maxIterations int = 256;
 
 	var x0 float32 = -2;
@@ -74,14 +76,18 @@ func helperBenchmarkMandelbrot(t *testing.B, fn mandlebrotFunc) {
 
 	out := make([]int32, width * height)
 
-	fn(x0, y0, x1, y1, width, height, 0, height, maxIterations,
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		fn(x0, y0, x1, y1, width, height, 0, height, maxIterations,
 		out)
+	}
 }
 // Comparing two different implementations of mandlebrot
 func helperTestMandelbrot(t *testing.T, fn1 mandlebrotFunc,  fn2 mandlebrotFunc) {
 
-	var width int = 1200;
-	var height int = 800;
+	var width int = 120;
+	var height int = 80;
 	var maxIterations int = 256;
 
 	var x0 float32 = -2;
