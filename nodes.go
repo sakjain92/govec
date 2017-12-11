@@ -877,26 +877,31 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		p.print("BadExpr")
 
 	case *ast.Ident:
-		if p.writeShadowCStr {
-			if(strings.HasPrefix(x.Name, "govec")) {
-				p.shadowCStr += (x.Name)
-			} else {
-				if (x.Name == "float32") {
-					p.shadowCStr += "float"
-				} else if (x.Name == "float64") {
-					p.shadowCStr += "double"
+		if strings.HasPrefix(x.Name, "__govec") {
+			p.print(x.Name[7:])
+		} else {
+			if p.writeShadowCStr {
+				if(strings.HasPrefix(x.Name, "govec")) {
+					p.shadowCStr += (x.Name)
 				} else {
-					p.shadowCStr += x.Name
+					if (x.Name == "float32") {
+						p.shadowCStr += "float"
+					} else if (x.Name == "float64") {
+						p.shadowCStr += "double"
+					} else {
+						p.shadowCStr += x.Name
+					}
 				}
 			}
+			if (x.Name == "float32") {
+				p.print("float")
+			} else if (x.Name == "float64") {
+				p.print("double")
+			} else {
+				p.print(x)
+			}
 		}
-		if (x.Name == "float32") {
-			p.print("float")
-		} else if (x.Name == "float64") {
-			p.print("double")
-		} else {
-			p.print(x)
-		}
+
 
 	case *ast.BinaryExpr:
 		if depth < 1 {
@@ -1025,10 +1030,14 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 				if strings.HasPrefix(sel.Name, "ReduceAdd") {
 					p.print("reduce_add(", x.Args[0], ")")
 				} else if strings.HasPrefix(sel.Name, "DoubleRange") {
-					p.print(x.Args[0], " ... ", x.Args[1], ") ", x.Args[2],
-							" = (", x.Args[3],  " ... ", x.Args[4])
+					p.print(x.Args[0], " = ", x.Args[1], " ... ", x.Args[2], ", ",
+							 x.Args[3], " = ", x.Args[4],  " ... ", x.Args[5])
 				} else {
-					p.print(x.Args[0], " ... ", x.Args[1])
+					if len(x.Args) == 3 {
+						p.print(x.Args[0], " = ", x.Args[1], " ... ", x.Args[2])
+					} else {
+						p.print(x.Args[0], " ... ", x.Args[1])
+					}
 				}
 				if wasIndented {
 					p.print(unindent)
@@ -1511,7 +1520,29 @@ func (p *printer) stmt(stmt ast.Stmt, nextIsRBrace bool) {
 		}
 
 	case *ast.ForStmt:
-		p.print(token.FOR)
+		if(s.Init == nil) {
+			if(s.Cond == nil) {
+				p.print(token.FOR)
+			} else {
+				switch s.Cond.(type) {
+				case *ast.CallExpr:
+					switch s.Cond.(*ast.CallExpr).Fun.(type) {
+					case *ast.SelectorExpr:
+						if(s.Cond.(*ast.CallExpr).Fun.(*ast.SelectorExpr).X.(*ast.Ident).Name == "govec") {
+							p.print("foreach")
+						} else {
+							p.print(token.FOR)
+						}
+					default:
+						p.print(token.FOR)
+					}
+				default:
+				 	p.print(token.FOR)
+				}
+			}
+		} else {
+			p.print(token.FOR)
+		}
 		p.print("(")
 		p.controlClause(true, s.Init, s.Cond, s.Post)
 		p.print(")")
@@ -2078,7 +2109,9 @@ func (p *printer) funcDecl(d *ast.FuncDecl) {
 		p.print(blank)
 	}
 
-	p.print("export ")
+	if strings.HasPrefix(d.Name.Name, "govec") {
+		p.print("export ")
+	}
 
 	p.henabled = true
 
