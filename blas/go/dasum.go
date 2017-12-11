@@ -6,6 +6,8 @@ import (
 	"github.com/sakjain92/govectool/govec"
 )
 
+//go:generate govectool dasum.go
+
 func SerialDasum(N int, X []float64, incX int) float64 {
 	var (
 		a  float64
@@ -44,7 +46,7 @@ func SerialDasumGeneric(N int, X []float64, incX int) float64 {
 	return a
 }
 
-func _govecDasum(N govec.UniformInt, X []govec.UniformFloat64,
+func _govecISPCDasum(N govec.UniformInt, X []govec.UniformFloat64,
 				 incX govec.UniformInt) govec.UniformFloat64 {
 	var sum, x float64
 

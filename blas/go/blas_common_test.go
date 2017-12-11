@@ -55,6 +55,130 @@ func helperTestSaxpy(t *testing.T, fn  saxpyFunc) {
 	}
 }
 
+/* Dasum */
+
+type dasumFunc func(N int, X []float64, incX int) float64
+
+func helperBenchmarkDasum(b *testing.B, fn dasumFunc) {
+
+	b.StopTimer()
+
+	count := 100000
+
+	X := make([]float64, count)
+
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		fn(count, X, 1)
+	}
+}
+
+func helperTestDasum(t *testing.T, fn dasumFunc) {
+
+	X := []float64{}
+	var res float64
+
+	for i := 0; i < 8; i++ {
+		if i % 2 == 0 {
+			X = append(X, float64(i))
+		} else {
+			X = append(X, float64(i) * -1)
+		}
+
+		res = res + float64(i)
+	}
+
+	ans := fn(8, X, 1)
+
+	if res != ans {
+		t.Errorf("Test(): \nexpected %f got %f\n", ans, res)
+	}
+}
+
+/* Sdot */
+
+type sdotFunc func(N int, X []float32, incX int, Y []float32, incY int) float32
+
+func helperBenchmarkSdot(b *testing.B, fn sdotFunc) {
+
+	b.StopTimer()
+
+	count := 100000
+
+	X := make([]float32, count)
+	Y := make([]float32, count)
+
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		fn(count, X, 1, Y, 1)
+	}
+}
+
+func helperTestSdot(t *testing.T, fn sdotFunc) {
+
+	X := []float32{}
+	Y := []float32{}
+
+	var res float32
+
+	for i := 0; i < 8; i++ {
+		X = append(X, float32(i))
+		Y = append(Y, float32(i * 2))
+		res = res + float32(i * i * 2)
+	}
+
+	ans := fn(8, X, 1, Y, 1)
+
+	if res != ans {
+		t.Errorf("Test(): \nexpected %f got %f\n", ans, res)
+	}
+}
+
+/* Sdsdot */
+
+type sdsdotFunc func(N int, alpha float32, X []float32, incX int, Y []float32, incY int) float32
+
+func helperBenchmarkSdsdot(b *testing.B, fn sdsdotFunc) {
+	b.StopTimer()
+
+	count := 100000
+
+	X := make([]float32, count)
+	Y := make([]float32, count)
+	var alpha float32 = 2.0
+
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		fn(count, alpha, X, 1, Y, 1)
+	}
+}
+
+func helperTestSdsdot(t *testing.T, fn sdsdotFunc) {
+
+	X := []float32{}
+	Y := []float32{}
+	var alpha float32 = 2.0
+	var res float32
+
+	for i := 0; i < 8; i++ {
+		X = append(X, float32(i))
+		Y = append(Y, float32(i * 2))
+		res = res + float32(i * i * 2)
+	}
+
+	res = res + alpha
+
+	ans := fn(8, alpha, X, 1, Y, 1)
+
+	if res != ans {
+		t.Errorf("Test(): \nexpected %f got %f\n", ans, res)
+	}
+
+}
+
 /* Mandlebrot */
 
 type mandlebrotFunc func(x0 float32, y0 float32, x1 float32, y1 float32,
