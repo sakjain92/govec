@@ -6,12 +6,15 @@
 #include <assert.h>
 #include "benchmark.h"
 #include "test.h"
+#include "time.h"
 
 /* Number of samples per test */
-#define MAX_SAMPLES	1000
+#define MAX_SAMPLES	10000
 
 /* Name of test case */
 #define MAX_NAME	100
+
+#define USE_CLOCK_GETTIME
 
 typedef struct stats {
 	double min;
@@ -39,7 +42,8 @@ typedef struct test {
 test_t tests[] = {
 	DEF_TEST(SerialSaxpy),
 	DEF_TEST(SerialSaxpyGeneric),
-	DEF_TEST(ISPCSaxpy)
+	DEF_TEST(ISPCSaxpy),
+	//DEF_TEST(Sleep),
 };
 
 int cmpsort(const void *p1, const void *p2)
@@ -50,7 +54,7 @@ int cmpsort(const void *p1, const void *p2)
 void computeStats(out_t *outval)
 {
 	int i;
-	double min = 10E20, max = 0;
+	double min = 1E20, max = 0;
 	double sum = 0, avg, stdsum = 0;
 
 	// sort first for median
@@ -91,12 +95,12 @@ void printStats(out_t *outval)
 	char *unit;
 	double d;
 
-	if (stats->avg > 10E6) {
+	if (stats->avg > 1E6) {
 		unit = "ms";
-		d = 10E6;
-	} else if (stats->avg > 10E3) {
+		d = 1E6;
+	} else if (stats->avg > 1E3) {
 		unit = "us";
-		d = 10E3;
+		d = 1E3;
 	} else {
 		unit = "ns";
 		d = 1;
@@ -109,9 +113,16 @@ void printStats(out_t *outval)
 
 unsigned long long getTicks(void)
 {
+#ifndef USE_CLOCK_GETTIME
 	unsigned int a, d;
 	asm volatile("rdtsc" : "=a" (a), "=d" (d));
 	return (unsigned long long)(a) | ((unsigned long long)(d) << 32);
+#else
+	struct timespec tp;
+	assert(clock_gettime(CLOCK_MONOTONIC, &tp) == 0);
+
+	return tp.tv_sec * 1E9 + tp.tv_nsec;
+#endif
 }
 
 double secondsPerTick(void)
@@ -186,7 +197,11 @@ double getTestTimens(test_t *test, double secPerTick)
 
 	assert(test->stopTicks > test->startTicks);
 
-	return (double)(ticks) * secPerTick * 10E9;
+#ifndef USE_CLOCK_GETTIME
+	return (double)(ticks) * secPerTick * 1E9;
+#else
+	return (double)(ticks);
+#endif
 }
 
 void initTest(test_t *test)
@@ -208,7 +223,7 @@ int main(void)
 
 	double secPerTick = secondsPerTick();
 
-	fprintf(stdout, "Process Speed: %f Ghz\n", 10E-9/secPerTick);
+	fprintf(stdout, "Process Speed: %f Ghz\n", 1E-9/secPerTick);
 	fprintf(stdout, "No. of samples taken: %d\n", MAX_SAMPLES);
 
 	for (i = 0; i < num_test; i++) {

@@ -5,11 +5,12 @@
 void SerialSaxpy(int N, float alpha, float X[], float Y[]);
 void SerialSaxpyGeneric(int N, float alpha, float X[], int incX, float Y[],
 						int incY);
-void ISPCSaxpy(int N, float alpha, float X[], float Y[]);
+void ISPCSaxpy(int N, float alpha, float X[], int incX, float Y[], int incY);
 
 void SerialSaxpyTest(test_t *test);
 void SerialSaxpyGenericTest(test_t *test);
 void ISPCSaxpyTest(test_t *test);
+void SleepTest(test_t *test);
 
 /* Test declarations */
 #endif
