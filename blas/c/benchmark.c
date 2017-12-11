@@ -109,7 +109,7 @@ void printStats(out_t *outval)
 		d = 1;
 	}
 
-	fprintf(stdout, "Min %.2f %s,\t Max %.2f %s,\t Avg: %.2lf %s,\t Median: %.2f %s\t Stddev: %.2lf %s\n",
+	fprintf(stdout, "Min %.3f %s,\t Max %.3f %s,\t Avg: %.3lf %s,\t Median: %.3f %s\t Stddev: %.3lf %s\n",
 			stats->min / d, unit, stats->max / d, unit, stats->avg / d, unit, stats->median / d, unit,
 			stats->stddev / d, unit);
 }

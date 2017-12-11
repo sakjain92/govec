@@ -25,11 +25,11 @@ void SerialMandelbrot(
 {
     float dx = (x1 - x0) / width;
     float dy = (y1 - y0) / height;
-
+    int i, j;
     int endRow = startRow + totalRows;
 
-    for (int j = startRow; j < endRow; j++) {
-        for (int i = 0; i < width; ++i) {
+    for (j = startRow; j < endRow; j++) {
+        for (i = 0; i < width; ++i) {
             float x = x0 + i * dx;
             float y = y0 + j * dy;
 
