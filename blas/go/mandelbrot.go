@@ -6,6 +6,11 @@ package blas
 
 import (
     "github.com/sakjain92/govectool/govec"
+    "github.com/harrydb/go/img/pnm"
+    "os"
+    "log"
+    "image"
+    "image/color"
 )
 
 func mandel(c_re float32 , c_im float32 , count int) int32 {
@@ -117,3 +122,50 @@ func _govecISPCMandelbrot(
     }
 }
 
+type mandelImage struct {
+	output []int32
+	width	int
+	height	int
+}
+
+func (m mandelImage) ColorModel() color.Model {
+	return color.RGBAModel
+}
+
+func (m mandelImage) Bounds() image.Rectangle {
+	return image.Rect(0, 0, m.width, m.height)
+}
+
+func (m mandelImage) At(x, y int) color.Color {
+
+	var c color.RGBA
+	v := m.output[x + y * m.width]
+
+	c.R = uint8(v)
+	c.G = uint8(v)
+	c.B = uint8(v)
+	c.A = 1
+
+	return c
+}
+
+// Writes a mandelbrot image to .ppm file
+func writeMandelBrotFile(output []int32, width int, height int, filename string) {
+
+	var m mandelImage
+
+	m.output = output
+	m.width = width
+	m.height = height
+
+	file, err := os.Create(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = pnm.Encode(file, m, pnm.PPM)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+}

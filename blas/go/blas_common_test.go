@@ -238,4 +238,7 @@ func helperTestMandelbrot(t *testing.T, fn1 mandlebrotFunc,  fn2 mandlebrotFunc)
 				i, out1[i], out2[i])
 		}
 	}
+
+	writeMandelBrotFile(out1, width, height, "mandelbrot1.ppm")
+	writeMandelBrotFile(out1, width, height, "mandelbrot2.ppm")
 }
