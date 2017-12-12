@@ -9,7 +9,7 @@
 #include "time.h"
 
 /* Number of samples per test */
-#define MAX_SAMPLES	1000
+#define MAX_SAMPLES	10000
 
 /* Name of test case */
 #define MAX_NAME	100
