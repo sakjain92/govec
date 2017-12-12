@@ -44,6 +44,19 @@ test_t tests[] = {
 	DEF_TEST(SerialSaxpy),
 	DEF_TEST(SerialSaxpyGeneric),
 	DEF_TEST(ISPCSaxpy),
+
+	DEF_TEST(SerialDasum),
+	DEF_TEST(SerialDasumGeneric),
+	DEF_TEST(ISPCDasum),
+
+	DEF_TEST(SerialSdot),
+	DEF_TEST(SerialSdotGeneric),
+	DEF_TEST(ISPCSdot),
+
+	DEF_TEST(SerialSdsdot),
+	DEF_TEST(SerialSdsdotGeneric),
+	DEF_TEST(ISPCSdsdot),
+
 	DEF_TEST(SerialMandelbrot),
 	DEF_TEST(ISPCMandelbrot),
 	//DEF_TEST(Sleep),

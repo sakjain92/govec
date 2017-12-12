@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <math.h>
 
 enum saxpyFunc {
 	SERIAL = 0,
@@ -78,6 +80,162 @@ void ISPCSaxpyTest(test_t *test)
 {
 	SaxpyTest(SERIAL_ISPC, test);
 }
+
+
+/* Dasum */
+
+static void DasumTest(test_t *test, dasumFn fn)
+{
+	int i, count = 100000;
+	double X[count];
+	double res = 0, exp = 0;
+
+	int first = isFirst(test);
+	if (first) {
+		for (i = 0; i < count; i++) {
+			if (i % 2 == 0) {
+				X[i] = (double)frand();
+			} else {
+				X[i] = -1 * (double)frand();
+			}
+
+			exp += fabs(X[i]);
+		}
+	}
+
+	resetTime(test);
+	res = fn(count, X, 1);
+	stopTime(test);
+
+	if (first) {
+		assert(res == exp);
+	}
+}
+
+void SerialDasumTest(test_t *test)
+{
+	DasumTest(test, SerialDasum);
+}
+
+void SerialDasumGenericTest(test_t *test)
+{
+	DasumTest(test, SerialDasumGeneric);
+}
+
+void ISPCDasumTest(test_t *test)
+{
+	DasumTest(test, ISPCDasum);
+}
+
+
+/* Sdot */
+
+static void SdotTest(test_t *test, sdotFn fn)
+{
+	int i, count = 100000;
+	float X[count], Y[count];
+	float res = 0, exp = 0;
+
+	int first = isFirst(test);
+	if (first) {
+		for (i = 0; i < count; i++) {
+			if (i % 2 == 0) {
+				X[i] = frand();
+			} else {
+				X[i] = -1 * frand();
+			}
+
+			Y[i] = 2 * X[i];
+
+			if (i % 3 == 0) {
+				Y[i] = -1 * Y[i];
+			}
+
+			exp += X[i] * Y[i];
+		}
+	}
+
+	resetTime(test);
+	res = fn(count, X, 1, Y, 1);
+	stopTime(test);
+
+	if (first) {
+		/* TODO: Find out why this rounding off error */
+		assert(fabs(res - exp) < 1);
+	}
+}
+
+void SerialSdotTest(test_t *test)
+{
+	SdotTest(test, SerialSdot);
+}
+
+void SerialSdotGenericTest(test_t *test)
+{
+	SdotTest(test, SerialSdotGeneric);
+}
+
+void ISPCSdotTest(test_t *test)
+{
+	SdotTest(test, ISPCSdot);
+}
+
+
+/* Sdsdot */
+
+static void SdsdotTest(test_t *test, sdsdotFn fn)
+{
+	int i, count = 100000;
+	float X[count], Y[count];
+	float res = 0;
+	double exp = 0;
+	float alpha = 2.0;
+
+	int first = isFirst(test);
+	if (first) {
+		for (i = 0; i < count; i++) {
+			if (i % 2 == 0) {
+				X[i] = frand();
+			} else {
+				X[i] = -1 * frand();
+			}
+
+			Y[i] = 2 * X[i];
+
+			if (i % 3 == 0) {
+				Y[i] = -1 * Y[i];
+			}
+
+			exp += (double)(X[i]) * (double)(Y[i]);
+		}
+
+		exp += (double)(alpha);
+	}
+
+	resetTime(test);
+	res = fn(count, alpha, X, 1, Y, 1);
+	stopTime(test);
+
+	if (first) {
+		assert(res == (float)exp);
+	}
+}
+
+void SerialSdsdotTest(test_t *test)
+{
+	SdsdotTest(test, SerialSdsdot);
+}
+
+void SerialSdsdotGenericTest(test_t *test)
+{
+	SdsdotTest(test, SerialSdsdotGeneric);
+}
+
+void ISPCSdsdotTest(test_t *test)
+{
+	SdsdotTest(test, ISPCSdsdot);
+}
+
 
 /* Mandelbrot */
 
