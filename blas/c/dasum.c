@@ -3,10 +3,10 @@
 
 double SerialDasum(int N, double X[], int incX) {
 	double sum = 0.0;
-
+  int i;
 	assert(incX == 1);
 
-	for(int i = 0; i < N; i++) {
+	for(i = 0; i < N; i++) {
 		double x = X[i];
 		if(x < 0) {
 			x = -x;
