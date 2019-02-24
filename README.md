@@ -1,5 +1,4 @@
 # govec
-govec - Vectorization support in go
 
 Details:
 
